@@ -1,0 +1,21 @@
+flutter_native_splash:
+  # Background color (white to match clean design)
+  color: "#FFFFFF"
+  
+  # App icon to display in the center
+  image: assets/icon/app_icon.png
+  
+  # Android 12+ specific settings
+  android_12:
+    color: "#FFFFFF"
+    image: assets/icon/app_icon.png
+  
+  # Platform support
+  ios: true
+  android: true
+  
+  # Web support (optional)
+  web: false
+  
+  # Remove fullscreen mode (recommended for modern apps)
+  fullscreen: false
