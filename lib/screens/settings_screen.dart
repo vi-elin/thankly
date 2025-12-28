@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/settings_service.dart';
 import '../services/notification_service.dart';
 import '../core/di/injection.dart';
@@ -312,9 +313,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     color: Colors.grey[400],
                   ),
                   onTap: () {
-                    // TODO: Add privacy policy URL
-                    // _launchURL('YOUR_PRIVACY_POLICY_URL');
-                    debugPrint('Privacy Policy tapped - URL not set yet');
+                    _launchURL(
+                        'https://vi-elin.github.io/thankly/privacy-policy.html');
                   },
                 ),
                 Divider(
@@ -355,9 +355,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     color: Colors.grey[400],
                   ),
                   onTap: () {
-                    // TODO: Add terms of service URL
-                    // _launchURL('YOUR_TERMS_URL');
-                    debugPrint('Terms of Service tapped - URL not set yet');
+                    _launchURL(
+                        'https://vi-elin.github.io/thankly/terms-of-service.html');
                   },
                 ),
               ],
@@ -796,6 +795,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final code = context.locale.languageCode;
     if (code == 'uk') return 'language_ukrainian'.tr();
     return 'language_english'.tr();
+  }
+
+  Future<void> _launchURL(String url) async {
+    final uri = Uri.parse(url);
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('could_not_open_link'.tr()),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   void _showLanguageSelector(BuildContext context) {

@@ -46,5 +46,6 @@
     "gratitude_hint": "Each line will be a new item...\n\nFor example:\nMy family\nA warm cup of coffee\nA beautiful sunset",
     "preview": "Preview:",
     "please_add_at_least_one_item": "Please add at least one item",
-    "version": "Version"
+    "version": "Version",
+    "could_not_open_link": "Could not open link"
 }
