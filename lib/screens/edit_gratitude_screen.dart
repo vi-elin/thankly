@@ -134,6 +134,7 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
     }
 
     _isProcessingChange = false;
+    setState(() {});
   }
 
   @override
