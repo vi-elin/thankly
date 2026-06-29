@@ -7,12 +7,17 @@ import 'bloc/gratitude_event.dart';
 import 'screens/home_screen.dart';
 import 'services/notification_service.dart';
 import 'services/settings_service.dart';
+import 'services/firebase_service.dart';
+import 'widgets/app_version_checker.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Initialize easy_localization
   await EasyLocalization.ensureInitialized();
+
+  // Initialize Firebase (must be first for Crashlytics to work)
+  await FirebaseService().initialize();
 
   // Initialize dependency injection
   await setupDependencyInjection();
@@ -110,7 +115,9 @@ class _MyAppState extends State<MyApp> {
           fontFamily: 'SF Pro Text',
           scaffoldBackgroundColor: Colors.grey[50],
         ),
-        home: const HomeScreen(),
+        home: AppVersionChecker(
+          child: const HomeScreen(),
+        ),
       ),
     );
   }

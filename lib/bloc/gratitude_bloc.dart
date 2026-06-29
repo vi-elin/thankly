@@ -1,11 +1,13 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../data/dao/gratitude_dao.dart';
 import '../models/gratitude.dart';
+import '../services/firebase_service.dart';
 import 'gratitude_event.dart';
 import 'gratitude_state.dart';
 
 class GratitudeBloc extends Bloc<GratitudeEvent, GratitudeState> {
   final GratitudeDao gratitudeDao;
+  final _firebaseService = FirebaseService();
 
   GratitudeBloc({required this.gratitudeDao})
       : super(const GratitudeInitial()) {
@@ -43,6 +45,13 @@ class GratitudeBloc extends Bloc<GratitudeEvent, GratitudeState> {
       final entity = event.gratitude.toEntity();
       await gratitudeDao.insertGratitude(entity);
 
+      await _firebaseService.logEvent(
+        name: 'gratitude_created',
+        parameters: {
+          'item_count': event.gratitude.items.length,
+        },
+      );
+
       // Reload gratitudes
       add(const LoadGratitudes());
     } catch (e) {
@@ -58,6 +67,13 @@ class GratitudeBloc extends Bloc<GratitudeEvent, GratitudeState> {
       final entity = event.gratitude.toEntity();
       await gratitudeDao.updateGratitude(entity);
 
+      await _firebaseService.logEvent(
+        name: 'gratitude_updated',
+        parameters: {
+          'item_count': event.gratitude.items.length,
+        },
+      );
+
       // Reload gratitudes
       add(const LoadGratitudes());
     } catch (e) {
@@ -71,6 +87,13 @@ class GratitudeBloc extends Bloc<GratitudeEvent, GratitudeState> {
   ) async {
     try {
       await gratitudeDao.deleteGratitudeById(event.id);
+
+      await _firebaseService.logEvent(
+        name: 'gratitude_deleted',
+        parameters: {
+          'gratitude_id': event.id,
+        },
+      );
 
       // Reload gratitudes
       add(const LoadGratitudes());

@@ -10,6 +10,7 @@ import './edit_gratitude_screen.dart';
 import './settings_screen.dart';
 import '../core/di/injection.dart';
 import '../services/notification_service.dart';
+import '../services/firebase_service.dart';
 import 'dart:async';
 import 'package:easy_localization/easy_localization.dart';
 
@@ -32,6 +33,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         context.read<GratitudeBloc>().add(const LoadGratitudes());
       }
     });
+
+    // Log screen view
+    FirebaseService().logScreenView(
+      screenName: 'home_screen',
+      screenClass: 'HomeScreen',
+    );
   }
 
   @override
@@ -107,39 +114,54 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
           if (state is GratitudeLoaded) {
             if (state.groupedGratitudes.isEmpty) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(32.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.auto_awesome,
-                        size: 64,
-                        color: Colors.grey[300],
+              return Stack(
+                children: [
+                  Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(32.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.auto_awesome,
+                            size: 64,
+                            color: Colors.grey[300],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'empty_state_title'.tr(),
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w300,
+                              color: Colors.grey[600],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'empty_state_message'.tr(),
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.grey[400],
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'empty_state_title'.tr(),
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w300,
-                          color: Colors.grey[600],
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'empty_state_message'.tr(),
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[400],
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                  SafeArea(
+                    child: Align(
+                      alignment: Alignment.topRight,
+                      child: IconButton(
+                        icon: const Icon(Icons.settings_outlined,
+                            color: Colors.black87),
+                        tooltip: 'settings_title'.tr(),
+                        onPressed: () => _navigateToSettings(context),
+                      ),
+                    ),
+                  ),
+                ],
               );
             }
 

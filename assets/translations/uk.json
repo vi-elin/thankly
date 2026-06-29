@@ -48,5 +48,13 @@
     "preview": "Попередній перегляд:",
     "please_add_at_least_one_item": "Будь ласка, додайте хоча б один елемент",
     "version": "Версія",
-    "could_not_open_link": "Не вдалося відкрити посилання"
+    "could_not_open_link": "Не вдалося відкрити посилання",
+    "maintenance_title": "Технічне обслуговування",
+    "update_required": "Потрібне оновлення",
+    "update_available": "Доступне оновлення",
+    "update_now": "Оновити зараз",
+    "later": "Пізніше",
+    "ok": "OK",
+    "current_version": "Поточна версія",
+    "latest_version": "Остання версія"
 }

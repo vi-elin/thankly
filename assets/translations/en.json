@@ -47,5 +47,13 @@
     "preview": "Preview:",
     "please_add_at_least_one_item": "Please add at least one item",
     "version": "Version",
-    "could_not_open_link": "Could not open link"
+    "could_not_open_link": "Could not open link",
+    "maintenance_title": "Maintenance",
+    "update_required": "Update Required",
+    "update_available": "Update Available",
+    "update_now": "Update Now",
+    "later": "Later",
+    "ok": "OK",
+    "current_version": "Current version",
+    "latest_version": "Latest version"
 }

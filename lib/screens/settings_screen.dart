@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/settings_service.dart';
 import '../services/notification_service.dart';
+import '../services/firebase_service.dart';
 import '../core/di/injection.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -43,6 +44,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _gratitudeReminderHour = _settingsService.gratitudeReminderHour;
     _gratitudeReminderMinute = _settingsService.gratitudeReminderMinute;
     _gratitudeReminderRegularity = _settingsService.gratitudeReminderRegularity;
+
+    // Log screen view
+    FirebaseService().logScreenView(
+      screenName: 'settings_screen',
+      screenClass: 'SettingsScreen',
+    );
   }
 
   @override
@@ -95,6 +102,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               });
               await _settingsService.setDailyReminderEnabled(value);
               await _updateNotifications();
+
+              // Log analytics event
+              await FirebaseService().logEvent(
+                name: 'notification_settings_changed',
+                parameters: {
+                  'notification_type': 'daily_reminder',
+                  'enabled': value,
+                },
+              );
             },
             child: _dailyReminderEnabled
                 ? _buildTimeSelector(
@@ -128,6 +144,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               });
               await _settingsService.setGratitudeReminderEnabled(value);
               await _updateNotifications();
+
+              // Log analytics event
+              await FirebaseService().logEvent(
+                name: 'notification_settings_changed',
+                parameters: {
+                  'notification_type': 'gratitude_reminder',
+                  'enabled': value,
+                },
+              );
             },
             child: _gratitudeReminderEnabled
                 ? Column(
@@ -535,7 +560,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 CupertinoSwitch(
                   value: enabled,
                   onChanged: onToggle,
-                  activeColor: iconColor,
+                  activeTrackColor: iconColor,
                 ),
               ],
             ),
@@ -849,6 +874,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     : null,
                 onTap: () async {
                   await context.setLocale(const Locale('en'));
+
+                  // Log analytics event
+                  await FirebaseService().logEvent(
+                    name: 'language_changed',
+                    parameters: {
+                      'language': 'en',
+                    },
+                  );
+
                   if (mounted) {
                     Navigator.pop(context);
                   }
@@ -863,6 +897,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     : null,
                 onTap: () async {
                   await context.setLocale(const Locale('uk'));
+
+                  // Log analytics event
+                  await FirebaseService().logEvent(
+                    name: 'language_changed',
+                    parameters: {
+                      'language': 'uk',
+                    },
+                  );
+
                   if (mounted) {
                     Navigator.pop(context);
                   }

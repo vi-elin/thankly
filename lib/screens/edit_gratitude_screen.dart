@@ -60,7 +60,7 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
 
     // If user starts typing from empty, add bullet
     if (_previousText.isEmpty && text.isNotEmpty && !text.startsWith('• ')) {
-      newText = '• ' + text;
+      newText = '• $text';
       newCursorPosition = cursorPosition + 2;
     }
     // Handle Enter key - add bullet to new line
@@ -74,7 +74,7 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
       if (currentLine.trim().length > 2) {
         // More than just "• "
         if (!text.endsWith('• ')) {
-          newText = text + '• ';
+          newText = '$text• ';
           newCursorPosition = cursorPosition + 2;
         }
       } else {
