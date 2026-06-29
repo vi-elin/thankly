@@ -5,6 +5,10 @@ import '../models/gratitude.dart';
 import '../bloc/gratitude_bloc.dart';
 import '../bloc/gratitude_event.dart';
 
+const _editBg = Color(0xFFF2F2F4);
+const _editPrimary = Color(0xFF2A2327);
+const _editHeading = Color(0xFF4A4044);
+
 class EditGratitudeScreen extends StatefulWidget {
   final Gratitude? gratitude;
 
@@ -22,27 +26,15 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
   @override
   void initState() {
     super.initState();
-    // Initialize with existing gratitude items or empty
     final items = widget.gratitude?.items ?? [];
-    String initialText;
-
-    if (items.isEmpty) {
-      // Start with empty text to show placeholder
-      initialText = '';
-    } else {
-      // Add bullet points to existing items
-      initialText = items.map((item) => '• $item').join('\n');
-    }
-
+    final initialText = items.isEmpty ? '' : items.map((item) => '• $item').join('\n');
     _previousText = initialText;
     _controller = TextEditingController(text: initialText);
   }
 
   bool get _hasChanges {
-    // Compare cleaned items, not raw text with bullets
     final currentItems = _getItems();
     final initialItems = widget.gratitude?.items ?? [];
-
     if (currentItems.length != initialItems.length) return true;
     for (int i = 0; i < currentItems.length; i++) {
       if (currentItems[i] != initialItems[i]) return true;
@@ -58,65 +50,34 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
     String newText = text;
     int newCursorPosition = cursorPosition;
 
-    // If user starts typing from empty, add bullet
     if (_previousText.isEmpty && text.isNotEmpty && !text.startsWith('• ')) {
       newText = '• $text';
       newCursorPosition = cursorPosition + 2;
-    }
-    // Handle Enter key - add bullet to new line
-    else if (text.length > _previousText.length && text.endsWith('\n')) {
-      // User pressed Enter
-      // Check if the current line has any text (not just bullet)
+    } else if (text.length > _previousText.length && text.endsWith('\n')) {
       final lines = _previousText.split('\n');
       final currentLine = lines.last;
-
-      // Only allow new line if current line has text after the bullet
       if (currentLine.trim().length > 2) {
-        // More than just "• "
         if (!text.endsWith('• ')) {
           newText = '$text• ';
           newCursorPosition = cursorPosition + 2;
         }
       } else {
-        // Don't allow new line, remove the newline character
         newText = _previousText;
         newCursorPosition = cursorPosition - 1;
       }
-    }
-    // Handle Backspace on bullet point
-    else if (text.length < _previousText.length) {
-      // User deleted something
+    } else if (text.length < _previousText.length) {
       final deletedCount = _previousText.length - text.length;
-
-      // The cursor position we have is AFTER deletion in the new text
-      // We need to find where it was in the old text BEFORE deletion
       final oldCursorPosition = cursorPosition + deletedCount;
-
       if (oldCursorPosition <= _previousText.length) {
-        // Check what was deleted
-        final deletedText =
-            _previousText.substring(cursorPosition, oldCursorPosition);
-
-        // If user deleted a bullet character at the start of a line
-        if (deletedText == '•' &&
-            cursorPosition > 0 &&
-            _previousText[cursorPosition - 1] == '\n') {
-          // User is deleting the bullet at the start of a line (not the first line)
-          // Merge this line with the previous line
-          final beforeBullet = _previousText.substring(
-              0, cursorPosition - 1); // Everything before the \n
-          final afterBullet = _previousText
-              .substring(oldCursorPosition + 1); // Skip the space after bullet
-
+        final deletedText = _previousText.substring(cursorPosition, oldCursorPosition);
+        if (deletedText == '•' && cursorPosition > 0 && _previousText[cursorPosition - 1] == '\n') {
+          final beforeBullet = _previousText.substring(0, cursorPosition - 1);
+          final afterBullet = _previousText.substring(oldCursorPosition + 1);
           newText = beforeBullet + afterBullet;
           newCursorPosition = beforeBullet.length;
-        }
-        // If user deleted the space after the bullet, restore it
-        else if (deletedText == ' ' &&
-            cursorPosition > 0 &&
-            _previousText[cursorPosition - 1] == '•') {
-          newText = _previousText; // Restore the text
-          newCursorPosition = cursorPosition; // Keep cursor where it was
+        } else if (deletedText == ' ' && cursorPosition > 0 && _previousText[cursorPosition - 1] == '•') {
+          newText = _previousText;
+          newCursorPosition = cursorPosition;
         }
       }
     }
@@ -124,9 +85,7 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
     _previousText = newText;
 
     if (newText != text || newCursorPosition != cursorPosition) {
-      // Ensure cursor position is within bounds
       newCursorPosition = newCursorPosition.clamp(0, newText.length);
-
       _controller.value = TextEditingValue(
         text: newText,
         selection: TextSelection.collapsed(offset: newCursorPosition),
@@ -146,81 +105,130 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black87),
-          onPressed: _handleBack,
-        ),
-        actions: [
-          // Delete button (only for existing gratitudes)
-          if (widget.gratitude != null)
-            IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.red),
-              onPressed: _handleDelete,
-            ),
-          IconButton(
-            onPressed: _hasChanges ? _save : null,
-            icon: Icon(
-              Icons.check,
-              color: _hasChanges ? Colors.white : Colors.grey[400],
-            ),
-            style: IconButton.styleFrom(
-              backgroundColor: _hasChanges ? Colors.green : Colors.grey[200],
-              shape: const CircleBorder(),
-              disabledBackgroundColor: Colors.grey[200],
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
+      backgroundColor: _editBg,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                widget.gratitude == null
-                    ? 'what_are_you_grateful_for'.tr()
-                    : 'edit_your_gratitude'.tr(),
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w300,
-                  color: Colors.grey[800],
-                  letterSpacing: 0.5,
-                ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Top bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(22, 14, 22, 6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildBackButton(),
+                  _buildSaveButton(),
+                ],
               ),
-              const SizedBox(height: 24),
-              Expanded(
-                child: TextField(
-                  controller: _controller,
-                  autofocus: true,
-                  maxLines: null,
-                  expands: true,
-                  textAlignVertical: TextAlignVertical.top,
-                  onChanged: _handleTextChanged,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    height: 1.8,
-                    color: Colors.black87,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'gratitude_hint'.tr(),
-                    hintStyle: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 16,
-                      height: 1.8,
+            ),
+            // Heading + text field
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(26, 18, 26, 40),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      widget.gratitude == null
+                          ? 'what_are_you_grateful_for'.tr()
+                          : 'edit_your_gratitude'.tr(),
+                      style: const TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        color: _editHeading,
+                        letterSpacing: -0.42,
+                        height: 1.12,
+                      ),
                     ),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
-                  ),
+                    const SizedBox(height: 30),
+                    Expanded(
+                      child: TextField(
+                        controller: _controller,
+                        autofocus: true,
+                        maxLines: null,
+                        expands: true,
+                        textAlignVertical: TextAlignVertical.top,
+                        onChanged: _handleTextChanged,
+                        style: const TextStyle(
+                          fontSize: 18.5,
+                          fontWeight: FontWeight.w500,
+                          height: 1.7,
+                          color: _editPrimary,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: 'gratitude_hint'.tr(),
+                          hintStyle: const TextStyle(
+                            color: Color(0xFFB09AA3),
+                            fontSize: 18.5,
+                            fontWeight: FontWeight.w500,
+                            height: 1.7,
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackButton() {
+    return GestureDetector(
+      onTap: _handleBack,
+      child: Container(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment(0.3, -1.0),
+            end: Alignment(-0.3, 1.0),
+            colors: [Color(0xB8FFFFFF), Color(0x75FFFFFF)],
           ),
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: const Color(0xD9FFFFFF)),
+          boxShadow: const [
+            BoxShadow(color: Color(0x14462D41), blurRadius: 16, offset: Offset(0, 6)),
+          ],
+        ),
+        child: const Icon(Icons.arrow_back, size: 22, color: Color(0xFF26211E)),
+      ),
+    );
+  }
+
+  Widget _buildSaveButton() {
+    final active = _hasChanges;
+    return GestureDetector(
+      onTap: active ? _save : null,
+      child: Container(
+        width: 42,
+        height: 42,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: active
+              ? const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFFE580A4), Color(0xFFD2698E)],
+                )
+              : null,
+          color: active ? null : const Color(0xB3DCD8DD),
+          border: Border.all(
+            color: active ? const Color(0x66FFFFFF) : const Color(0x80FFFFFF),
+          ),
+          boxShadow: active
+              ? [const BoxShadow(color: Color(0x56B2446A), blurRadius: 16, offset: Offset(0, 6))]
+              : null,
+        ),
+        child: Icon(
+          Icons.check,
+          size: 22,
+          color: active ? Colors.white : const Color(0xFFAAA1A6),
         ),
       ),
     );
@@ -232,16 +240,10 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
         .map((line) => line.trim())
         .where((line) => line.isNotEmpty)
         .map((line) {
-          // Remove bullet points (• or -) from the beginning
-          if (line.startsWith('• ')) {
-            return line.substring(2).trim();
-          } else if (line.startsWith('•')) {
-            return line.substring(1).trim();
-          } else if (line.startsWith('- ')) {
-            return line.substring(2).trim();
-          } else if (line.startsWith('-')) {
-            return line.substring(1).trim();
-          }
+          if (line.startsWith('• ')) return line.substring(2).trim();
+          if (line.startsWith('•')) return line.substring(1).trim();
+          if (line.startsWith('- ')) return line.substring(2).trim();
+          if (line.startsWith('-')) return line.substring(1).trim();
           return line;
         })
         .where((line) => line.isNotEmpty)
@@ -253,19 +255,25 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text('discard_changes_title'.tr()),
-          content: Text('discard_changes_message'.tr()),
+          backgroundColor: const Color(0xFFFBE7F0),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+          title: Text('discard_changes_title'.tr(),
+              style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w700, color: Color(0xFF211A1C))),
+          content: Text('discard_changes_message'.tr(),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF6C5B62), height: 1.45)),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('cancel_button'.tr()),
+              child: Text('cancel_button'.tr(),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFFBF4A72))),
             ),
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close dialog
-                Navigator.pop(context); // Close screen
+                Navigator.pop(context);
+                Navigator.pop(context);
               },
-              child: Text('discard_button'.tr()),
+              child: Text('discard_button'.tr(),
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFFBF4A72))),
             ),
           ],
         ),
@@ -275,49 +283,8 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
     }
   }
 
-  void _handleDelete() async {
-    if (widget.gratitude?.id == null) return;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('delete_gratitude_title'.tr()),
-        content: Text('delete_gratitude_message'.tr()),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text('cancel_button'.tr()),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
-            child: Text('delete_button'.tr()),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && mounted) {
-      context.read<GratitudeBloc>().add(DeleteGratitude(widget.gratitude!.id!));
-      Navigator.pop(context);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('gratitude_deleted'.tr()),
-            behavior: SnackBarBehavior.floating,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
-    }
-  }
-
   void _save() async {
     final items = _getItems();
-
     if (items.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -330,24 +297,17 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
 
     final gratitude = Gratitude(
       id: widget.gratitude?.id,
-      timestamp:
-          widget.gratitude?.timestamp ?? DateTime.now().millisecondsSinceEpoch,
+      timestamp: widget.gratitude?.timestamp ?? DateTime.now().millisecondsSinceEpoch,
       items: items,
     );
 
-    // Save using BLoC
     if (!mounted) return;
-
     final bloc = context.read<GratitudeBloc>();
     if (widget.gratitude == null) {
       bloc.add(AddGratitude(gratitude));
     } else {
       bloc.add(UpdateGratitude(gratitude));
     }
-
-    // Return to previous screen
-    if (mounted) {
-      Navigator.pop(context);
-    }
+    if (mounted) Navigator.pop(context);
   }
 }
