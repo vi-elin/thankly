@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -6,6 +5,42 @@ import '../services/settings_service.dart';
 import '../services/notification_service.dart';
 import '../services/firebase_service.dart';
 import '../core/di/injection.dart';
+
+const _accent        = Color(0xFFE85A8C);
+// ignore: unused_element
+const _accentPressed = Color(0xFFD94C7D);
+// ignore: unused_element
+const _accentTint5   = Color(0xFFFFF6F9);
+// ignore: unused_element
+const _accentTint10  = Color(0xFFFCEAF1);
+const _accentTint15  = Color(0xFFF9E1EA);
+const _primary       = Color(0xFF211A1C);
+const _secondary     = Color(0xFF6C6166);
+const _neutralIcon   = Color(0xFF6B6065);
+// ignore: unused_element
+const _neutralTint   = Color(0xFFF2ECEE);
+const _sectionLabel  = Color(0xFF7A7177);
+const _chevron       = Color(0xFF807579);
+// ignore: unused_element
+const _subBg         = Color(0xFFF3F3F5);
+const _pageBg        = Color(0xFFF2F2F4);
+
+// Glassmorphism card: frosted gradient with white border and soft pink shadow
+final _cardDecoration = BoxDecoration(
+  gradient: const LinearGradient(
+    begin: Alignment(0.3, -1.0),
+    end: Alignment(-0.3, 1.0),
+    colors: [Color(0xB8FFFFFF), Color(0x75FFFFFF)],
+  ),
+  borderRadius: const BorderRadius.all(Radius.circular(26)),
+  border: Border.all(color: const Color(0xD9FFFFFF)),
+  boxShadow: const [
+    BoxShadow(color: Color(0x17462D41), blurRadius: 36, offset: Offset(0, 14)),
+  ],
+);
+
+// Preset times shown in the time picker sheet
+const _presetHours = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23];
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -18,12 +53,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late final SettingsService _settingsService;
   late final NotificationService _notificationService;
 
-  // Daily reminder state
   late bool _dailyReminderEnabled;
   late int _dailyReminderHour;
   late int _dailyReminderMinute;
 
-  // Gratitude reminder state
   late bool _gratitudeReminderEnabled;
   late int _gratitudeReminderHour;
   late int _gratitudeReminderMinute;
@@ -35,7 +68,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _settingsService = getIt<SettingsService>();
     _notificationService = getIt<NotificationService>();
 
-    // Load current settings
     _dailyReminderEnabled = _settingsService.isDailyReminderEnabled;
     _dailyReminderHour = _settingsService.dailyReminderHour;
     _dailyReminderMinute = _settingsService.dailyReminderMinute;
@@ -45,7 +77,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _gratitudeReminderMinute = _settingsService.gratitudeReminderMinute;
     _gratitudeReminderRegularity = _settingsService.gratitudeReminderRegularity;
 
-    // Log screen view
     FirebaseService().logScreenView(
       screenName: 'settings_screen',
       screenClass: 'SettingsScreen',
@@ -55,131 +86,91 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: _pageBg,
       appBar: AppBar(
-        title: Text(
-          'settings_title'.tr(),
-          style: const TextStyle(
-            fontWeight: FontWeight.w300,
-            letterSpacing: 1.2,
-          ),
-        ),
-        backgroundColor: Colors.white,
+        backgroundColor: _pageBg,
         elevation: 0,
+        scrolledUnderElevation: 0,
         centerTitle: true,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios, color: Colors.black87),
+          icon: const Icon(Icons.chevron_left, color: _primary, size: 28),
           onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          'Settings',
+          style: TextStyle(
+            fontSize: 21,
+            fontWeight: FontWeight.w700,
+            color: _primary,
+            letterSpacing: -0.21,
+          ),
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 24),
+        padding: const EdgeInsets.fromLTRB(18, 6, 18, 60),
         children: [
-          // Notifications Section Header
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
-            child: Text(
-              'notifications_header'.tr(),
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[600],
-                letterSpacing: 1.0,
-              ),
-            ),
-          ),
+          _sectionHeader('notifications_header'.tr()),
 
-          // Daily Reminder Card
+          // Daily Reminder
           _buildNotificationCard(
             title: 'daily_reminder_title'.tr(),
             description: 'daily_reminder_description'.tr(),
             icon: Icons.calendar_today_outlined,
-            iconColor: Colors.blue,
             enabled: _dailyReminderEnabled,
-            onToggle: (value) async {
-              setState(() {
-                _dailyReminderEnabled = value;
-              });
+            onToggle: () async {
+              final value = !_dailyReminderEnabled;
+              setState(() => _dailyReminderEnabled = value);
               await _settingsService.setDailyReminderEnabled(value);
               await _updateNotifications();
-
-              // Log analytics event
               await FirebaseService().logEvent(
                 name: 'notification_settings_changed',
-                parameters: {
-                  'notification_type': 'daily_reminder',
-                  'enabled': value,
-                },
+                parameters: {'notification_type': 'daily_reminder', 'enabled': value},
               );
             },
-            child: _dailyReminderEnabled
-                ? _buildTimeSelector(
+            expandedContent: _dailyReminderEnabled
+                ? _buildTimeSection(
                     hour: _dailyReminderHour,
                     minute: _dailyReminderMinute,
-                    onTimeChanged: (hour, minute) async {
-                      setState(() {
-                        _dailyReminderHour = hour;
-                        _dailyReminderMinute = minute;
-                      });
-                      await _settingsService.setDailyReminderHour(hour);
-                      await _settingsService.setDailyReminderMinute(minute);
+                    onPick: (h, m) async {
+                      setState(() { _dailyReminderHour = h; _dailyReminderMinute = m; });
+                      await _settingsService.setDailyReminderHour(h);
+                      await _settingsService.setDailyReminderMinute(m);
                       await _updateNotifications();
                     },
                   )
                 : null,
           ),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
 
-          // Gratitude Reminder Card
+          // Gratitude Reminders
           _buildNotificationCard(
             title: 'gratitude_reminders_title'.tr(),
             description: 'gratitude_reminders_description'.tr(),
             icon: Icons.favorite_outline,
-            iconColor: Colors.pink,
             enabled: _gratitudeReminderEnabled,
-            onToggle: (value) async {
-              setState(() {
-                _gratitudeReminderEnabled = value;
-              });
+            onToggle: () async {
+              final value = !_gratitudeReminderEnabled;
+              setState(() => _gratitudeReminderEnabled = value);
               await _settingsService.setGratitudeReminderEnabled(value);
               await _updateNotifications();
-
-              // Log analytics event
               await FirebaseService().logEvent(
                 name: 'notification_settings_changed',
-                parameters: {
-                  'notification_type': 'gratitude_reminder',
-                  'enabled': value,
-                },
+                parameters: {'notification_type': 'gratitude_reminder', 'enabled': value},
               );
             },
-            child: _gratitudeReminderEnabled
+            expandedContent: _gratitudeReminderEnabled
                 ? Column(
                     children: [
-                      _buildRegularitySelector(
-                        regularity: _gratitudeReminderRegularity,
-                        onRegularityChanged: (hours) async {
-                          setState(() {
-                            _gratitudeReminderRegularity = hours;
-                          });
-                          await _settingsService
-                              .setGratitudeReminderRegularity(hours);
-                          await _updateNotifications();
-                        },
-                      ),
-                      const SizedBox(height: 16),
-                      _buildTimeSelector(
+                      _buildFrequencySection(),
+                      const SizedBox(height: 12),
+                      _buildTimeSection(
                         hour: _gratitudeReminderHour,
                         minute: _gratitudeReminderMinute,
-                        onTimeChanged: (hour, minute) async {
-                          setState(() {
-                            _gratitudeReminderHour = hour;
-                            _gratitudeReminderMinute = minute;
-                          });
-                          await _settingsService.setGratitudeReminderHour(hour);
-                          await _settingsService
-                              .setGratitudeReminderMinute(minute);
+                        onPick: (h, m) async {
+                          setState(() { _gratitudeReminderHour = h; _gratitudeReminderMinute = m; });
+                          await _settingsService.setGratitudeReminderHour(h);
+                          await _settingsService.setGratitudeReminderMinute(m);
                           await _updateNotifications();
                         },
                       ),
@@ -188,306 +179,97 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 : null,
           ),
 
-          const SizedBox(height: 32),
+          _sectionHeader('legal_header'.tr()),
 
-          // Testing Section Header
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
-            child: Text(
-              'TESTING',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[600],
-                letterSpacing: 1.0,
-              ),
-            ),
-          ),
-
-          // Test Notification Button
+          // Legal card
           Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 8,
-              ),
-              leading: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.orange.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.notification_add,
-                  color: Colors.orange,
-                  size: 24,
-                ),
-              ),
-              title: const Text(
-                'Send Test Notification',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87,
-                ),
-              ),
-              subtitle: const Text(
-                'Test push notification with inline input',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.grey,
-                ),
-              ),
-              trailing: Icon(
-                Icons.send,
-                color: Colors.grey[400],
-              ),
-              onTap: () async {
-                // Send test notification
-                await _notificationService.testDailyReminder();
-
-                // Show confirmation
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content:
-                          Text('Test notification scheduled for 5 seconds'),
-                      behavior: SnackBarBehavior.floating,
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                }
-              },
-            ),
-          ),
-
-          const SizedBox(height: 32),
-
-          // Legal Section Header
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
-            child: Text(
-              'legal_header'.tr(),
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[600],
-                letterSpacing: 1.0,
-              ),
-            ),
-          ),
-
-          // Legal Links Card
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
+            decoration: _cardDecoration,
             child: Column(
               children: [
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 8,
-                  ),
-                  leading: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.privacy_tip_outlined,
-                      color: Colors.grey[700],
-                      size: 24,
-                    ),
-                  ),
-                  title: Text(
-                    'privacy_policy'.tr(),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  trailing: Icon(
-                    Icons.open_in_new,
-                    size: 20,
-                    color: Colors.grey[400],
-                  ),
-                  onTap: () {
-                    _launchURL(
-                        'https://vi-elin.github.io/thankly/privacy-policy.html');
-                  },
+                _buildLegalRow(
+                  icon: Icons.shield_outlined,
+                  label: 'privacy_policy'.tr(),
+                  onTap: () => _launchURL('https://vi-elin.github.io/thankly/privacy-policy.html'),
                 ),
-                Divider(
-                  height: 1,
-                  indent: 68,
-                  endIndent: 20,
-                  color: Colors.grey[200],
-                ),
-                ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 8,
-                  ),
-                  leading: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Icon(
-                      Icons.description_outlined,
-                      color: Colors.grey[700],
-                      size: 24,
-                    ),
-                  ),
-                  title: Text(
-                    'terms_of_service'.tr(),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  trailing: Icon(
-                    Icons.open_in_new,
-                    size: 20,
-                    color: Colors.grey[400],
-                  ),
-                  onTap: () {
-                    _launchURL(
-                        'https://vi-elin.github.io/thankly/terms-of-service.html');
-                  },
+                Container(height: 1, color: const Color(0x12140814), margin: const EdgeInsets.only(left: 70)),
+                _buildLegalRow(
+                  icon: Icons.description_outlined,
+                  label: 'terms_of_service'.tr(),
+                  onTap: () => _launchURL('https://vi-elin.github.io/thankly/terms-of-service.html'),
                 ),
               ],
             ),
           ),
 
-          const SizedBox(height: 32),
+          _sectionHeader('language_header'.tr()),
 
-          // Language Section Header
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 12),
-            child: Text(
-              'language_header'.tr(),
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[600],
-                letterSpacing: 1.0,
+          // Language card
+          GestureDetector(
+            onTap: () => _showLanguageSelector(context),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+              decoration: _cardDecoration,
+              child: Row(
+                children: [
+                  Container(
+                    width: 46,
+                    height: 46,
+                    decoration: BoxDecoration(
+                      color: const Color(0xD9E4E4E8),
+                      borderRadius: BorderRadius.circular(15),
+                      border: Border.all(color: const Color(0x80FFFFFF)),
+                    ),
+                    child: const Icon(Icons.language, color: _neutralIcon, size: 22),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('language_title'.tr(),
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _primary)),
+                        const SizedBox(height: 2),
+                        Text(_getLanguageName(context),
+                            style: const TextStyle(fontSize: 13.5, color: _secondary)),
+                      ],
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right, color: _chevron, size: 22),
+                ],
               ),
             ),
           ),
 
-          // Language Selection Card
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.04),
-                  blurRadius: 10,
-                  offset: const Offset(0, 2),
-                ),
-              ],
-            ),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 20,
-                vertical: 8,
-              ),
-              leading: Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.language,
-                  color: Colors.grey[700],
-                  size: 24,
-                ),
-              ),
-              title: Text(
-                'language_title'.tr(),
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87,
-                ),
-              ),
-              subtitle: Text(
-                _getLanguageName(context),
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey[600],
-                ),
-              ),
-              trailing: Icon(
-                Icons.chevron_right,
-                color: Colors.grey[400],
-              ),
-              onTap: () => _showLanguageSelector(context),
-            ),
-          ),
+          const SizedBox(height: 30),
 
-          const SizedBox(height: 32),
-
-          // App Version
+          // Version footer
           Center(
             child: Column(
               children: [
-                Text(
-                  'Thankly',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.grey[600],
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${'version'.tr()} 1.0.0 (1)',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[400],
-                  ),
-                ),
+                const Text('Thankly',
+                    style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _primary, letterSpacing: 0.15)),
+                const SizedBox(height: 3),
+                Text('${'version'.tr()} 1.0.0 (1)',
+                    style: const TextStyle(fontSize: 12.5, color: Color(0xFFAAA0A4))),
               ],
             ),
           ),
-
-          const SizedBox(height: 32),
         ],
+      ),
+    );
+  }
+
+  Widget _sectionHeader(String text) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 22, 8, 12),
+      child: Text(
+        text.toUpperCase(),
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.68,
+          color: _sectionLabel,
+        ),
       ),
     );
   }
@@ -496,210 +278,167 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required String title,
     required String description,
     required IconData icon,
-    required Color iconColor,
     required bool enabled,
-    required ValueChanged<bool> onToggle,
-    Widget? child,
+    required VoidCallback onToggle,
+    Widget? expandedContent,
   }) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.all(18),
+      decoration: _cardDecoration,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              children: [
-                // Icon
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: iconColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Pink gradient glassmorphism icon container
+              Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    begin: Alignment(-0.87, -0.5),
+                    end: Alignment(0.87, 0.5),
+                    colors: [Color(0xD9FBDBE9), Color(0x9EF6C8DD)],
                   ),
-                  child: Icon(icon, color: iconColor, size: 24),
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(color: const Color(0xBFFFFFFF)),
                 ),
-                const SizedBox(width: 16),
-                // Title and description
-                Expanded(
+                child: Icon(icon, color: const Color(0xFFDB6A92), size: 22),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 1),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        description,
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[600],
-                          height: 1.3,
-                        ),
-                      ),
+                      Text(title,
+                          style: const TextStyle(
+                              fontSize: 17.5, fontWeight: FontWeight.w700,
+                              color: _primary, letterSpacing: -0.175)),
+                      const SizedBox(height: 3),
+                      Text(description,
+                          style: const TextStyle(
+                              fontSize: 13.5, color: _secondary, height: 1.45)),
                     ],
                   ),
                 ),
-                // Switch
-                CupertinoSwitch(
-                  value: enabled,
-                  onChanged: onToggle,
-                  activeTrackColor: iconColor,
-                ),
-              ],
-            ),
-          ),
-          if (child != null)
-            Container(
-              padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-              child: child,
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTimeSelector({
-    required int hour,
-    required int minute,
-    required Function(int hour, int minute) onTimeChanged,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.access_time, size: 18, color: Colors.grey[600]),
-              const SizedBox(width: 8),
-              Text(
-                'time_label'.tr(),
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
-                ),
               ),
+              const SizedBox(width: 10),
+              _buildToggle(enabled, onToggle),
             ],
           ),
-          const SizedBox(height: 12),
-          InkWell(
-            onTap: () => _showTimePicker(hour, minute, onTimeChanged),
-            borderRadius: BorderRadius.circular(8),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey[300]!),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    _formatTime(hour, minute),
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  Icon(Icons.chevron_right, color: Colors.grey[400]),
-                ],
-              ),
-            ),
-          ),
+          if (expandedContent != null) ...[
+            const SizedBox(height: 16),
+            expandedContent,
+          ],
         ],
       ),
     );
   }
 
-  Widget _buildRegularitySelector({
-    required int regularity,
-    required ValueChanged<int> onRegularityChanged,
-  }) {
-    final regularityOptions = [
-      {'hours': 24, 'label': 'frequency_daily'.tr()},
-      {'hours': 72, 'label': 'frequency_every_3_days'.tr()},
-      {'hours': 168, 'label': 'frequency_weekly'.tr()},
-      {'hours': 720, 'label': 'frequency_monthly'.tr()},
+  Widget _buildToggle(bool value, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 50,
+        height: 30,
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(999),
+          gradient: value
+              ? const LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xFFEFA8C5), Color(0xFFDF7CA0)],
+                )
+              : null,
+          color: value ? null : const Color(0x33787076),
+        ),
+        child: AnimatedAlign(
+          duration: const Duration(milliseconds: 280),
+          curve: Curves.elasticOut,
+          alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+          child: Container(
+            width: 24,
+            height: 24,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white,
+              boxShadow: [BoxShadow(color: Color(0x38000000), blurRadius: 5, offset: Offset(0, 2))],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFrequencySection() {
+    final options = [
+      (hours: 24, label: 'frequency_daily'.tr()),
+      (hours: 72, label: 'frequency_every_3_days'.tr()),
+      (hours: 168, label: 'frequency_weekly'.tr()),
+      (hours: 720, label: 'frequency_monthly'.tr()),
     ];
 
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey[200]!),
+        color: const Color(0xB2EBEBEE),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0x8CFFFFFF)),
+        boxShadow: const [
+          BoxShadow(color: Color(0x0D282832), blurRadius: 2, offset: Offset(0, 1)),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Icon(Icons.repeat, size: 18, color: Colors.grey[600]),
-              const SizedBox(width: 8),
-              Text(
-                'frequency_label'.tr(),
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
+          Row(children: [
+            const Icon(Icons.repeat, size: 16, color: _secondary),
+            const SizedBox(width: 8),
+            Text('frequency_label'.tr(),
+                style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600,
+                    color: _secondary, letterSpacing: 0.27)),
+          ]),
+          const SizedBox(height: 13),
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: regularityOptions.map((option) {
-              final hours = option['hours'] as int;
-              final label = option['label'] as String;
-              final isSelected = regularity == hours;
-
-              return InkWell(
-                onTap: () => onRegularityChanged(hours),
-                borderRadius: BorderRadius.circular(20),
+            spacing: 10,
+            runSpacing: 10,
+            children: options.map((opt) {
+              final isSelected = _gratitudeReminderRegularity == opt.hours;
+              return GestureDetector(
+                onTap: () async {
+                  setState(() => _gratitudeReminderRegularity = opt.hours);
+                  await _settingsService.setGratitudeReminderRegularity(opt.hours);
+                  await _updateNotifications();
+                },
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 11),
                   decoration: BoxDecoration(
-                    color: isSelected ? Colors.pink : Colors.white,
-                    borderRadius: BorderRadius.circular(20),
+                    gradient: isSelected
+                        ? const LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Color(0xFFE580A4), Color(0xFFD2698E)],
+                          )
+                        : null,
+                    color: isSelected ? null : Colors.white,
+                    borderRadius: BorderRadius.circular(999),
                     border: Border.all(
-                      color: isSelected ? Colors.pink : Colors.grey[300]!,
+                      color: isSelected ? const Color(0x66FFFFFF) : const Color(0x241E0F16),
                     ),
+                    boxShadow: isSelected
+                        ? [const BoxShadow(color: Color(0x38B2446A), blurRadius: 12, offset: Offset(0, 5))]
+                        : null,
                   ),
                   child: Text(
-                    label,
+                    opt.label,
                     style: TextStyle(
-                      fontSize: 13,
-                      fontWeight:
-                          isSelected ? FontWeight.w600 : FontWeight.w400,
-                      color: isSelected ? Colors.white : Colors.grey[700],
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.w600,
+                      color: isSelected ? Colors.white : _primary,
                     ),
                   ),
                 ),
@@ -711,72 +450,169 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  void _showTimePicker(
-    int currentHour,
-    int currentMinute,
-    Function(int hour, int minute) onTimeChanged,
-  ) {
+  Widget _buildTimeSection({
+    required int hour,
+    required int minute,
+    required Function(int, int) onPick,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: const Color(0xB2EBEBEE),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0x8CFFFFFF)),
+        boxShadow: const [
+          BoxShadow(color: Color(0x0D282832), blurRadius: 2, offset: Offset(0, 1)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            const Icon(Icons.access_time, size: 16, color: _secondary),
+            const SizedBox(width: 8),
+            Text('time_label'.tr(),
+                style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w600,
+                    color: _secondary, letterSpacing: 0.27)),
+          ]),
+          const SizedBox(height: 11),
+          GestureDetector(
+            onTap: () => _showTimePicker(hour, minute, onPick),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 17, vertical: 15),
+              decoration: BoxDecoration(
+                color: const Color(0x80FFFFFF),
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: const Color(0xD9FFFFFF)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    _formatTime(hour, minute),
+                    style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: _primary),
+                  ),
+                  const Icon(Icons.chevron_right, color: _chevron, size: 22),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLegalRow({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: const Color(0xD9E4E4E8),
+                borderRadius: BorderRadius.circular(13),
+                border: Border.all(color: const Color(0x80FFFFFF)),
+              ),
+              child: Icon(icon, color: _neutralIcon, size: 20),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(label,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _primary)),
+            ),
+            const Icon(Icons.open_in_new, size: 18, color: _chevron),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showTimePicker(int currentHour, int currentMinute, Function(int, int) onPick) {
+    const itemHeight = 52.0;
+    final selectedIndex = _presetHours.indexOf(currentHour);
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) {
-        int selectedHour = currentHour;
-        int selectedMinute = currentMinute;
+      builder: (ctx) {
+        final scrollCtrl = ScrollController();
+
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!scrollCtrl.hasClients) return;
+          final viewport = scrollCtrl.position.viewportDimension;
+          final target = selectedIndex * itemHeight - viewport / 2 + itemHeight / 2;
+          scrollCtrl.jumpTo(target.clamp(0.0, scrollCtrl.position.maxScrollExtent));
+        });
 
         return Container(
-          height: 300,
+          height: MediaQuery.of(ctx).size.height * 0.5,
           decoration: const BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
           ),
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 30),
           child: Column(
             children: [
-              // Header
               Container(
-                padding: const EdgeInsets.all(16),
+                width: 42, height: 5,
+                margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: Colors.grey[200]!),
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    TextButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: Text('cancel_button'.tr()),
-                    ),
-                    Text(
-                      'select_time'.tr(),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        onTimeChanged(selectedHour, selectedMinute);
-                        Navigator.pop(context);
-                      },
-                      child: Text('done_button'.tr()),
-                    ),
-                  ],
+                  color: const Color(0x24000000),
+                  borderRadius: BorderRadius.circular(999),
                 ),
               ),
-              // Time Picker
+              const Text(
+                'REMINDER TIME',
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+                    letterSpacing: 1.56, color: _sectionLabel),
+              ),
+              const SizedBox(height: 12),
               Expanded(
-                child: CupertinoDatePicker(
-                  mode: CupertinoDatePickerMode.time,
-                  initialDateTime: DateTime(
-                    2024,
-                    1,
-                    1,
-                    currentHour,
-                    currentMinute,
-                  ),
-                  onDateTimeChanged: (DateTime newDateTime) {
-                    selectedHour = newDateTime.hour;
-                    selectedMinute = newDateTime.minute;
+                child: ListView.builder(
+                  controller: scrollCtrl,
+                  itemCount: _presetHours.length,
+                  itemExtent: itemHeight,
+                  itemBuilder: (_, i) {
+                    final h = _presetHours[i];
+                    final isActive = h == currentHour;
+                    return GestureDetector(
+                      onTap: () {
+                        onPick(h, 0);
+                        Navigator.pop(ctx);
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        margin: const EdgeInsets.symmetric(vertical: 1.5),
+                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+                        decoration: BoxDecoration(
+                          color: isActive ? _accentTint15 : Colors.transparent,
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              _formatTime(h, 0),
+                              style: TextStyle(
+                                fontSize: 17,
+                                fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                                color: isActive ? _accent : _primary,
+                              ),
+                            ),
+                            if (isActive)
+                              const Icon(Icons.check, color: _accent, size: 20),
+                          ],
+                        ),
+                      ),
+                    );
                   },
                 ),
               ),
@@ -795,18 +631,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _updateNotifications() async {
-    // Cancel all existing notifications
     await _notificationService.cancelAll();
-
-    // Schedule daily reminder if enabled
     if (_dailyReminderEnabled) {
       await _notificationService.scheduleDailyReminder(
         hour: _dailyReminderHour,
         minute: _dailyReminderMinute,
       );
     }
-
-    // Schedule gratitude reminder if enabled
     if (_gratitudeReminderEnabled) {
       await _notificationService.scheduleRandomGratitudeReminder(
         hour: _gratitudeReminderHour,
@@ -840,82 +671,66 @@ class _SettingsScreenState extends State<SettingsScreen> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
-      builder: (context) {
+      builder: (ctx) {
         return Container(
           decoration: const BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
           ),
+          padding: const EdgeInsets.fromLTRB(14, 10, 14, 30),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // Header
               Container(
-                padding: const EdgeInsets.all(16),
+                width: 42, height: 5,
+                margin: const EdgeInsets.only(bottom: 16),
                 decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: Colors.grey[200]!),
-                  ),
-                ),
-                child: Text(
-                  'language_title'.tr(),
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  color: const Color(0x24000000),
+                  borderRadius: BorderRadius.circular(999),
                 ),
               ),
-              // English option
-              ListTile(
-                leading: const Text('🇬🇧', style: TextStyle(fontSize: 24)),
-                title: Text('language_english'.tr()),
-                trailing: context.locale.languageCode == 'en'
-                    ? const Icon(Icons.check, color: Colors.blue)
-                    : null,
-                onTap: () async {
-                  await context.setLocale(const Locale('en'));
-
-                  // Log analytics event
-                  await FirebaseService().logEvent(
-                    name: 'language_changed',
-                    parameters: {
-                      'language': 'en',
-                    },
-                  );
-
-                  if (mounted) {
-                    Navigator.pop(context);
-                  }
-                },
-              ),
-              // Ukrainian option
-              ListTile(
-                leading: const Text('🇺🇦', style: TextStyle(fontSize: 24)),
-                title: Text('language_ukrainian'.tr()),
-                trailing: context.locale.languageCode == 'uk'
-                    ? const Icon(Icons.check, color: Colors.blue)
-                    : null,
-                onTap: () async {
-                  await context.setLocale(const Locale('uk'));
-
-                  // Log analytics event
-                  await FirebaseService().logEvent(
-                    name: 'language_changed',
-                    parameters: {
-                      'language': 'uk',
-                    },
-                  );
-
-                  if (mounted) {
-                    Navigator.pop(context);
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
+              Text('language_title'.tr(),
+                  style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+                      letterSpacing: 1.56, color: _sectionLabel)),
+              const SizedBox(height: 12),
+              _languageOption(ctx, code: 'en', label: 'language_english'.tr()),
+              _languageOption(ctx, code: 'uk', label: 'language_ukrainian'.tr()),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _languageOption(BuildContext sheetCtx, {required String code, required String label}) {
+    final isActive = context.locale.languageCode == code;
+    return GestureDetector(
+      onTap: () async {
+        await context.setLocale(Locale(code));
+        await FirebaseService().logEvent(name: 'language_changed', parameters: {'language': code});
+        if (mounted) Navigator.pop(context);
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 1.5),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 15),
+        decoration: BoxDecoration(
+          color: isActive ? _accentTint15 : Colors.transparent,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Text(label,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                    color: isActive ? _accent : _primary,
+                  )),
+            ),
+            if (isActive) const Icon(Icons.check, color: _accent, size: 20),
+          ],
+        ),
+      ),
     );
   }
 }

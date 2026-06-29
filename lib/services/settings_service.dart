@@ -25,7 +25,7 @@ class SettingsService {
     await _prefs.setBool(_keyDailyReminderEnabled, enabled);
   }
 
-  int get dailyReminderHour => _prefs.getInt(_keyDailyReminderHour) ?? 20;
+  int get dailyReminderHour => _prefs.getInt(_keyDailyReminderHour) ?? 12;
 
   Future<void> setDailyReminderHour(int hour) async {
     await _prefs.setInt(_keyDailyReminderHour, hour);
