@@ -92,9 +92,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
-        leading: IconButton(
-          icon: const Icon(Icons.chevron_left, color: _primary, size: 28),
-          onPressed: () => Navigator.pop(context),
+        leading: GestureDetector(
+          onTap: () => Navigator.pop(context),
+          child: Center(
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+                boxShadow: const [
+                  BoxShadow(color: Color(0x0A000000), blurRadius: 4, offset: Offset(0, 2)),
+                ],
+              ),
+              child: const Icon(Icons.chevron_left, color: _primary, size: 22),
+            ),
+          ),
         ),
         title: const Text(
           'Settings',
@@ -179,28 +192,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 : null,
           ),
 
-          _sectionHeader('legal_header'.tr()),
-
-          // Legal card
-          Container(
-            decoration: _cardDecoration,
-            child: Column(
-              children: [
-                _buildLegalRow(
-                  icon: Icons.shield_outlined,
-                  label: 'privacy_policy'.tr(),
-                  onTap: () => _launchURL('https://vi-elin.github.io/thankly/privacy-policy.html'),
-                ),
-                Container(height: 1, color: const Color(0x12140814), margin: const EdgeInsets.only(left: 70)),
-                _buildLegalRow(
-                  icon: Icons.description_outlined,
-                  label: 'terms_of_service'.tr(),
-                  onTap: () => _launchURL('https://vi-elin.github.io/thankly/terms-of-service.html'),
-                ),
-              ],
-            ),
-          ),
-
           _sectionHeader('language_header'.tr()),
 
           // Language card
@@ -237,6 +228,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const Icon(Icons.chevron_right, color: _chevron, size: 22),
                 ],
               ),
+            ),
+          ),
+
+          _sectionHeader('legal_header'.tr()),
+
+          // Legal card
+          Container(
+            decoration: _cardDecoration,
+            child: Column(
+              children: [
+                _buildLegalRow(
+                  icon: Icons.shield_outlined,
+                  label: 'privacy_policy'.tr(),
+                  onTap: () => _launchURL('https://vi-elin.github.io/thankly/privacy-policy.html'),
+                ),
+                Container(height: 1, color: const Color(0x12140814), margin: const EdgeInsets.only(left: 70)),
+                _buildLegalRow(
+                  icon: Icons.description_outlined,
+                  label: 'terms_of_service'.tr(),
+                  onTap: () => _launchURL('https://vi-elin.github.io/thankly/terms-of-service.html'),
+                ),
+              ],
             ),
           ),
 
@@ -329,10 +342,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
               _buildToggle(enabled, onToggle),
             ],
           ),
-          if (expandedContent != null) ...[
-            const SizedBox(height: 16),
-            expandedContent,
-          ],
+          AnimatedOpacity(
+            opacity: expandedContent != null ? 1.0 : 0.0,
+            duration: const Duration(milliseconds: 250),
+            child: expandedContent != null
+                ? Column(
+                    children: [
+                      const SizedBox(height: 16),
+                      expandedContent,
+                    ],
+                  )
+                : const SizedBox.shrink(),
+          ),
         ],
       ),
     );
@@ -357,8 +378,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           color: value ? null : const Color(0x33787076),
         ),
         child: AnimatedAlign(
-          duration: const Duration(milliseconds: 280),
-          curve: Curves.elasticOut,
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeInOut,
           alignment: value ? Alignment.centerRight : Alignment.centerLeft,
           child: Container(
             width: 24,
