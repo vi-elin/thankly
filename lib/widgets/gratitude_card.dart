@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import '../models/gratitude.dart';
 
 const _cardTextPrimary = Color(0xFF352D31);
-const _cardTextSecondary = Color(0xFF8A8086);
+const _cardTextSecondary = Color(0xFF9A9096);
 const _bulletColor = Color(0xFFE58BAC);
+const int _maxVisibleItems = 5;
 
 class GratitudeCard extends StatelessWidget {
   final Gratitude gratitude;
@@ -25,89 +26,49 @@ class GratitudeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final visibleItems = gratitude.items.take(_maxVisibleItems).toList();
+    final remainingCount = gratitude.items.length - _maxVisibleItems;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
         margin: const EdgeInsets.only(bottom: 13),
-        padding: const EdgeInsets.fromLTRB(18, 18, 18, 19),
+        padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment(0.3, -1.0),
-            end: Alignment(-0.3, 1.0),
-            colors: [Color(0xB8FFFFFF), Color(0x75FFFFFF)],
-          ),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(24),
-          border: Border.all(color: const Color(0xD9FFFFFF)),
           boxShadow: const [
-            BoxShadow(color: Color(0x17462D41), blurRadius: 36, offset: Offset(0, 14)),
+            BoxShadow(color: Color(0x0A000000), blurRadius: 4, offset: Offset(0, 2)),
           ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header: star icon + time + optional delete button
-            Row(
-              children: [
-                Container(
-                  width: 30,
-                  height: 30,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment(-0.87, -0.5),
-                      end: Alignment(0.87, 0.5),
-                      colors: [Color(0xD9FBDBE9), Color(0x9EF6C8DD)],
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: const Color(0xBFFFFFFF)),
-                  ),
-                  child: const Icon(Icons.auto_awesome, size: 15, color: Color(0xFFDB6A92)),
-                ),
-                const SizedBox(width: 10),
-                Text(
-                  _formatTime(),
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.26,
-                    color: _cardTextSecondary,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            // Gratitude items
-            for (int i = 0; i < gratitude.items.length; i++) ...[
-              if (i > 0) const SizedBox(height: 11),
+            // Visible gratitude items
+            for (int i = 0; i < visibleItems.length; i++) ...[
+              if (i > 0) const SizedBox(height: 12),
               Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(right: 11, top: 2),
                     child: SizedBox(
-                      width: 7,
-                      height: 7,
+                      width: 6,
+                      height: 6,
                       child: DecoratedBox(
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           shape: BoxShape.circle,
                           color: _bulletColor,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Color(0x4DB2446A),
-                              blurRadius: 2,
-                              offset: Offset(0, 1),
-                            ),
-                          ],
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 11),
                   Expanded(
                     child: Text(
-                      gratitude.items[i],
+                      visibleItems[i],
                       style: const TextStyle(
-                        fontSize: 15.5,
-                        fontWeight: FontWeight.w500,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
                         height: 1.5,
                         color: _cardTextPrimary,
                       ),
@@ -116,6 +77,31 @@ class GratitudeCard extends StatelessWidget {
                 ],
               ),
             ],
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                if (remainingCount > 0)
+                  Text(
+                    '+$remainingCount more',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                      color: _cardTextSecondary,
+                    ),
+                  )
+                else
+                  const SizedBox.shrink(),
+                Text(
+                  _formatTime(),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: _cardTextSecondary,
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),

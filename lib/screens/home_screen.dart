@@ -13,6 +13,7 @@ import '../core/di/injection.dart';
 import '../services/notification_service.dart';
 import '../services/firebase_service.dart';
 import '../models/gratitude.dart';
+import '../widgets/custom_dialog.dart';
 
 const _homePrimary = Color(0xFF211A1C);
 const _homeSecondary = Color(0xFF8A8086);
@@ -67,9 +68,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
           if (state is GratitudeError) {
             return SafeArea(
+              bottom: false,
               child: Column(
                 children: [
-                  _buildHeader(isEmpty: true),
+                  _buildHeader(isEmpty: true, groupedGratitudes: {}),
                   Expanded(
                     child: Center(
                       child: Padding(
@@ -87,9 +89,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           if (state is GratitudeLoaded) {
             final isEmpty = state.groupedGratitudes.isEmpty;
             return SafeArea(
+              bottom: false,
               child: Column(
                 children: [
-                  _buildHeader(isEmpty: isEmpty),
+                  _buildHeader(isEmpty: isEmpty, groupedGratitudes: state.groupedGratitudes),
                   Expanded(
                     child: isEmpty ? _buildEmptyState() : _buildList(context, state),
                   ),
@@ -102,45 +105,57 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         },
       ),
       floatingActionButton: _buildFAB(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
     );
   }
 
-  Widget _buildHeader({required bool isEmpty}) {
+  Widget _buildHeader({required bool isEmpty, required Map<DateTime, List<Gratitude>> groupedGratitudes}) {
+    final daysCount = groupedGratitudes.length;
+    final totalItems = groupedGratitudes.values.fold<int>(0, (sum, gratitudeList) {
+      return sum + gratitudeList.fold<int>(0, (itemSum, g) => itemSum + g.items.length);
+    });
+
+    final daysLabel = daysCount == 1 ? 'day' : 'days';
+    final gratitudeLabel = totalItems == 1 ? 'gratitude' : 'gratitudes';
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 14, 24, 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          if (!isEmpty)
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Gratitude',
-                    style: TextStyle(
-                      fontSize: 27,
-                      fontWeight: FontWeight.w800,
-                      color: _homePrimary,
-                      letterSpacing: -0.54,
-                      height: 1.0,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (!isEmpty)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      '$totalItems $gratitudeLabel',
+                      style: const TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w500,
+                        color: _homeSecondary,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    DateFormat('EEEE, MMMM d').format(DateTime.now()),
-                    style: const TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w500,
-                      color: _homeSecondary,
+                    const SizedBox(height: 2),
+                    Text(
+                      '$daysCount $daysLabel',
+                      style: const TextStyle(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w500,
+                        color: _homeSecondary,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            )
-          else
-            const Spacer(),
-          _buildSettingsButton(),
+                  ],
+                )
+              else
+                const SizedBox.shrink(),
+            ],
+          ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: _buildSettingsButton(),
+          ),
         ],
       ),
     );
@@ -153,15 +168,10 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
         width: 42,
         height: 42,
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment(0.3, -1.0),
-            end: Alignment(-0.3, 1.0),
-            colors: [Color(0xB8FFFFFF), Color(0x75FFFFFF)],
-          ),
+          color: Colors.white,
           borderRadius: BorderRadius.circular(21),
-          border: Border.all(color: const Color(0xD9FFFFFF)),
           boxShadow: const [
-            BoxShadow(color: Color(0x14462D41), blurRadius: 16, offset: Offset(0, 6)),
+            BoxShadow(color: Color(0x0A000000), blurRadius: 4, offset: Offset(0, 2)),
           ],
         ),
         child: const Icon(Icons.settings_outlined, size: 21, color: Color(0xFF6B6065)),
@@ -241,17 +251,32 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               direction: DismissDirection.endToStart,
               confirmDismiss: (_) => _showDeleteConfirmation(context),
               onDismissed: (_) => _deleteGratitude(context, gratitude),
-              background: Container(
+              background: Align(
                 alignment: Alignment.centerRight,
-                padding: const EdgeInsets.only(right: 24),
-                margin: const EdgeInsets.only(bottom: 13),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFE580A4), Color(0xFFD2698E)],
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 200),
+                  builder: (context, value, child) {
+                    return Opacity(
+                      opacity: value,
+                      child: Transform.scale(
+                        scale: 0.8 + (value * 0.2),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(right: 18, bottom: 13),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFFE580A4), Color(0xFFD2698E)],
+                      ),
+                      borderRadius: BorderRadius.circular(22),
+                    ),
+                    child: const Icon(Icons.delete_outline, color: Colors.white, size: 20),
                   ),
-                  borderRadius: BorderRadius.circular(24),
                 ),
-                child: const Icon(Icons.delete_outline, color: Colors.white, size: 22),
               ),
               child: GratitudeCard(
                 gratitude: gratitude,
@@ -277,9 +302,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             colors: [Color(0xFFE580A4), Color(0xFFD2698E)],
           ),
           border: Border.all(color: const Color(0x66FFFFFF)),
-          boxShadow: const [
-            BoxShadow(color: Color(0x66B2446A), blurRadius: 26, offset: Offset(0, 10)),
-          ],
         ),
         child: const Icon(Icons.add, color: Colors.white, size: 28, weight: 600),
       ),
@@ -290,26 +312,37 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final yesterday = today.subtract(const Duration(days: 1));
-    if (date == today) return 'today'.tr();
-    if (date == yesterday) return 'yesterday'.tr();
-    return DateFormat('EEEE, MMMM d, y').format(date);
+
+    if (date == today) {
+      return 'today'.tr().toUpperCase();
+    }
+    if (date == yesterday) {
+      return 'yesterday'.tr().toUpperCase();
+    }
+
+    if (date.year == now.year) {
+      return DateFormat('MMMM d').format(date).toUpperCase();
+    }
+
+    return DateFormat('MMMM d, y').format(date).toUpperCase();
   }
 
   Future<bool?> _showDeleteConfirmation(BuildContext context) {
     return showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('delete_gratitude_title'.tr()),
-        content: Text('delete_gratitude_message'.tr()),
+      builder: (context) => CustomDialog(
+        title: 'delete_gratitude_title'.tr(),
+        content: 'delete_gratitude_message'.tr(),
         actions: [
-          TextButton(
+          CustomDialogAction(
+            label: 'cancel_button'.tr(),
             onPressed: () => Navigator.pop(context, false),
-            child: Text('cancel_button'.tr()),
+            isPrimary: false,
           ),
-          TextButton(
+          CustomDialogAction(
+            label: 'delete_button'.tr(),
             onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: const Color(0xFFBF4A72)),
-            child: Text('delete_button'.tr()),
+            isPrimary: true,
           ),
         ],
       ),

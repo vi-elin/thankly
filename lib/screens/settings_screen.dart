@@ -429,9 +429,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     border: Border.all(
                       color: isSelected ? const Color(0x66FFFFFF) : const Color(0x241E0F16),
                     ),
-                    boxShadow: isSelected
-                        ? [const BoxShadow(color: Color(0x38B2446A), blurRadius: 12, offset: Offset(0, 5))]
-                        : null,
                   ),
                   child: Text(
                     opt.label,

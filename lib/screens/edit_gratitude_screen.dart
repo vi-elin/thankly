@@ -4,6 +4,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../models/gratitude.dart';
 import '../bloc/gratitude_bloc.dart';
 import '../bloc/gratitude_event.dart';
+import '../widgets/custom_dialog.dart';
 
 const _editBg = Color(0xFFF2F2F4);
 const _editPrimary = Color(0xFF2A2327);
@@ -254,26 +255,22 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
     if (_hasChanges && _controller.text.trim().isNotEmpty) {
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: const Color(0xFFFBE7F0),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
-          title: Text('discard_changes_title'.tr(),
-              style: const TextStyle(fontSize: 25, fontWeight: FontWeight.w700, color: Color(0xFF211A1C))),
-          content: Text('discard_changes_message'.tr(),
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Color(0xFF6C5B62), height: 1.45)),
+        builder: (context) => CustomDialog(
+          title: 'discard_changes_title'.tr(),
+          content: 'discard_changes_message'.tr(),
           actions: [
-            TextButton(
+            CustomDialogAction(
+              label: 'cancel_button'.tr(),
               onPressed: () => Navigator.pop(context),
-              child: Text('cancel_button'.tr(),
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFFBF4A72))),
+              isPrimary: false,
             ),
-            TextButton(
+            CustomDialogAction(
+              label: 'discard_button'.tr(),
               onPressed: () {
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
-              child: Text('discard_button'.tr(),
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFFBF4A72))),
+              isPrimary: true,
             ),
           ],
         ),

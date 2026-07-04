@@ -3,6 +3,8 @@ import 'package:easy_localization/easy_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/firebase_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'custom_dialog.dart';
+import 'custom_dialog.dart';
 
 /// Widget that checks for app updates and maintenance mode on app start
 class AppVersionChecker extends StatefulWidget {
@@ -79,16 +81,14 @@ class _AppVersionCheckerState extends State<AppVersionChecker> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Text('maintenance_title'.tr()),
-        content: Text(message),
+      builder: (context) => CustomDialog(
+        title: 'maintenance_title'.tr(),
+        content: message,
         actions: [
-          TextButton(
-            onPressed: () {
-              // Close the app
-              Navigator.of(context).pop();
-            },
-            child: Text('ok'.tr()),
+          CustomDialogAction(
+            label: 'ok'.tr(),
+            onPressed: () => Navigator.of(context).pop(),
+            isPrimary: true,
           ),
         ],
       ),
@@ -102,13 +102,14 @@ class _AppVersionCheckerState extends State<AppVersionChecker> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Text('update_required'.tr()),
-        content: Text(message),
+      builder: (context) => CustomDialog(
+        title: 'update_required'.tr(),
+        content: message,
         actions: [
-          TextButton(
+          CustomDialogAction(
+            label: 'update_now'.tr(),
             onPressed: _openAppStore,
-            child: Text('update_now'.tr()),
+            isPrimary: true,
           ),
         ],
       ),
@@ -122,21 +123,22 @@ class _AppVersionCheckerState extends State<AppVersionChecker> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('update_available'.tr()),
-        content: Text(
-            '$message\n\n${'current_version'.tr()}: $_currentVersion\n${'latest_version'.tr()}: $latestVersion'),
+      builder: (context) => CustomDialog(
+        title: 'update_available'.tr(),
+        content: '$message\n\n${'current_version'.tr()}: $_currentVersion\n${'latest_version'.tr()}: $latestVersion',
         actions: [
-          TextButton(
+          CustomDialogAction(
+            label: 'later'.tr(),
             onPressed: () => Navigator.of(context).pop(),
-            child: Text('later'.tr()),
+            isPrimary: false,
           ),
-          TextButton(
+          CustomDialogAction(
+            label: 'update_now'.tr(),
             onPressed: () {
               Navigator.of(context).pop();
               _openAppStore();
             },
-            child: Text('update_now'.tr()),
+            isPrimary: true,
           ),
         ],
       ),
