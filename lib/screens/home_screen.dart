@@ -165,16 +165,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     return GestureDetector(
       onTap: () => _navigateToSettings(context),
       child: Container(
-        width: 42,
-        height: 42,
-        decoration: BoxDecoration(
+        width: 44,
+        height: 44,
+        decoration: const BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(21),
-          boxShadow: const [
+          shape: BoxShape.circle,
+          boxShadow: [
             BoxShadow(color: Color(0x0A000000), blurRadius: 4, offset: Offset(0, 2)),
           ],
         ),
-        child: const Icon(Icons.settings_outlined, size: 21, color: Color(0xFF6B6065)),
+        child: const Icon(Icons.settings_outlined, size: 20, color: Color(0xFF6B6065)),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../models/gratitude.dart';
@@ -9,7 +10,6 @@ import '../widgets/custom_dialog.dart';
 const _editBg = Color(0xFFF2F2F4);
 const _editPrimary = Color(0xFF2A2327);
 const _editHeading = Color(0xFF4A4044);
-const _accentColor = Color(0xFFE85A8C);
 
 class EditGratitudeScreen extends StatefulWidget {
   final Gratitude? gratitude;
@@ -52,10 +52,7 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
     String newText = text;
     int newCursorPosition = cursorPosition;
 
-    if (_previousText.isEmpty && text.isNotEmpty && !text.startsWith('• ')) {
-      newText = '• $text';
-      newCursorPosition = cursorPosition + 2;
-    } else if (text.length > _previousText.length && text.endsWith('\n')) {
+    if (text.length > _previousText.length && text.endsWith('\n')) {
       final lines = _previousText.split('\n');
       final currentLine = lines.last;
       if (currentLine.trim().length > 2) {
@@ -66,6 +63,23 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
       } else {
         newText = _previousText;
         newCursorPosition = cursorPosition - 1;
+      }
+    } else if (text.length > _previousText.length) {
+      final insertedLength = text.length - _previousText.length;
+      final oldCursorPosition = cursorPosition - insertedLength;
+      if (oldCursorPosition >= 0 && oldCursorPosition <= _previousText.length) {
+        int lineStart = 0;
+        if (oldCursorPosition > 0) {
+          final idx = _previousText.lastIndexOf('\n', oldCursorPosition - 1);
+          lineStart = idx == -1 ? 0 : idx + 1;
+        }
+        final lineEndIndex = _previousText.indexOf('\n', oldCursorPosition);
+        final lineEnd = lineEndIndex == -1 ? _previousText.length : lineEndIndex;
+        final currentLineOld = _previousText.substring(lineStart, lineEnd);
+        if (currentLineOld.isEmpty) {
+          newText = '${text.substring(0, lineStart)}• ${text.substring(lineStart)}';
+          newCursorPosition = cursorPosition + 2;
+        }
       }
     } else if (text.length < _previousText.length) {
       final deletedCount = _previousText.length - text.length;
@@ -121,6 +135,7 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
       backgroundColor: _editBg,
       body: SafeArea(
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             _buildTopBar(items),
             // Heading
@@ -129,92 +144,46 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
               child: Text(
                 'what_are_you_grateful_for'.tr(),
                 style: const TextStyle(
-                  fontSize: 28,
+                  fontSize: 22,
                   fontWeight: FontWeight.w700,
                   color: _editHeading,
-                  letterSpacing: -0.42,
+                  letterSpacing: -0.33,
                   height: 1.12,
                 ),
                 textAlign: TextAlign.left,
               ),
             ),
-            // Items list
+            const SizedBox(height: 16),
+            // Text field
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(26, 30, 26, 20),
-                child: items.isEmpty
-                    ? _buildEmptyState()
-                    : SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            for (final item in items)
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      '• ',
-                                      style: TextStyle(
-                                        fontSize: 18.5,
-                                        fontWeight: FontWeight.w500,
-                                        color: _editPrimary,
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: Text(
-                                        item,
-                                        style: const TextStyle(
-                                          fontSize: 18.5,
-                                          fontWeight: FontWeight.w500,
-                                          color: _editPrimary,
-                                          height: 1.4,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            if (!_isEditingDisabled)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      '• ',
-                                      style: TextStyle(
-                                        fontSize: 18.5,
-                                        fontWeight: FontWeight.w500,
-                                        color: _accentColor,
-                                      ),
-                                    ),
-                                    Expanded(
-                                      child: TextField(
-                                        controller: _controller,
-                                        autofocus: items.isEmpty,
-                                        maxLines: null,
-                                        onChanged: _handleTextChanged,
-                                        style: const TextStyle(
-                                          fontSize: 18.5,
-                                          fontWeight: FontWeight.w500,
-                                          color: _editPrimary,
-                                          height: 1.4,
-                                        ),
-                                        decoration: const InputDecoration(
-                                          isDense: true,
-                                          contentPadding: EdgeInsets.zero,
-                                          border: InputBorder.none,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
+                padding: const EdgeInsets.fromLTRB(26, 0, 26, 40),
+                child: TextField(
+                  controller: _controller,
+                  autofocus: true,
+                  maxLines: null,
+                  expands: true,
+                  textAlignVertical: TextAlignVertical.top,
+                  onChanged: _handleTextChanged,
+                  style: const TextStyle(
+                    fontSize: 18.5,
+                    fontWeight: FontWeight.w500,
+                    height: 1.7,
+                    color: _editPrimary,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: 'gratitude_hint'.tr(),
+                    hintStyle: const TextStyle(
+                      color: Color(0xFFB09AA3),
+                      fontSize: 17,
+                      fontWeight: FontWeight.w500,
+                      height: 1.6,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  enabled: !_isEditingDisabled,
+                ),
               ),
             ),
           ],
@@ -232,7 +201,7 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
           _buildBackButton(),
           Row(
             children: [
-              if (items.isNotEmpty) _buildActionButtons(items),
+              _buildActionButtons(items),
               const SizedBox(width: 12),
               if (_hasChanges) _buildSaveButton(),
             ],
@@ -271,106 +240,11 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
             child: const SizedBox(
               width: 44,
               height: 44,
-              child: Icon(Icons.delete_outline, color: _editPrimary, size: 18),
+              child: Icon(Icons.delete_outline, color: _editPrimary, size: 20),
             ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'gratitude_hint'.tr(),
-          style: const TextStyle(
-            fontSize: 18.5,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFFB09AA3),
-            height: 1.4,
-          ),
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'for_example'.tr(),
-          style: const TextStyle(
-            fontSize: 18.5,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFFA09099),
-            height: 1.4,
-          ),
-        ),
-        const SizedBox(height: 12),
-        _buildExampleItem('My family'),
-        const SizedBox(height: 8),
-        _buildExampleItem('A warm cup of coffee'),
-        const SizedBox(height: 8),
-        _buildExampleItem('A beautiful sunset'),
-        if (!_isEditingDisabled) ...[
-          const SizedBox(height: 24),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                '• ',
-                style: TextStyle(
-                  fontSize: 18.5,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFFD2698E),
-                ),
-              ),
-              Expanded(
-                child: TextField(
-                  controller: _controller,
-                  autofocus: true,
-                  maxLines: null,
-                  onChanged: _handleTextChanged,
-                  style: const TextStyle(
-                    fontSize: 18.5,
-                    fontWeight: FontWeight.w500,
-                    color: _editPrimary,
-                    height: 1.4,
-                  ),
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: EdgeInsets.zero,
-                    border: InputBorder.none,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildExampleItem(String text) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          '• ',
-          style: TextStyle(
-            fontSize: 18.5,
-            fontWeight: FontWeight.w500,
-            color: Color(0xFFA09099),
-          ),
-        ),
-        Expanded(
-          child: Text(
-            text,
-            style: const TextStyle(
-              fontSize: 18.5,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFFA09099),
-              height: 1.4,
-            ),
-          ),
-        ),
-      ],
     );
   }
 
@@ -379,8 +253,8 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
     return GestureDetector(
       onTap: _handleBack,
       child: Container(
-        width: 36,
-        height: 36,
+        width: 44,
+        height: 44,
         decoration: const BoxDecoration(
           color: Colors.white,
           shape: BoxShape.circle,
@@ -397,8 +271,8 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
     return GestureDetector(
       onTap: _save,
       child: Container(
-        width: 36,
-        height: 36,
+        width: 44,
+        height: 44,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -410,7 +284,7 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
             BoxShadow(color: Color(0x56B2446A), blurRadius: 16, offset: Offset(0, 6)),
           ],
         ),
-        child: const Icon(Icons.check, color: Colors.white, size: 18),
+        child: const Icon(Icons.check, color: Colors.white, size: 20),
       ),
     );
   }
@@ -493,39 +367,18 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
     final items = _getItems();
     if (items.isEmpty) return;
 
-    showDialog(
-      context: context,
-      builder: (context) => CustomDialog(
-        title: 'duplicate_gratitude_title'.tr(),
-        content: 'duplicate_gratitude_message'.tr(),
-        actions: [
-          CustomDialogAction(
-            label: 'cancel_button'.tr(),
-            onPressed: () => Navigator.pop(context),
-            isPrimary: false,
-          ),
-          CustomDialogAction(
-            label: 'duplicate_button'.tr(),
-            onPressed: () {
-              Navigator.pop(context);
+    final text = items.join('\n');
+    Clipboard.setData(ClipboardData(text: text));
 
-              final gratitude = Gratitude(
-                id: null,
-                timestamp: DateTime.now().millisecondsSinceEpoch,
-                items: items,
-              );
-
-              if (mounted) {
-                final bloc = context.read<GratitudeBloc>();
-                bloc.add(AddGratitude(gratitude));
-                Navigator.pop(context);
-              }
-            },
-            isPrimary: true,
-          ),
-        ],
-      ),
-    );
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Copied'),
+          behavior: SnackBarBehavior.floating,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   void _handleClear() {

@@ -96,8 +96,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           onTap: () => Navigator.pop(context),
           child: Center(
             child: Container(
-              width: 36,
-              height: 36,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
                 color: Colors.white,
                 shape: BoxShape.circle,
