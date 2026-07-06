@@ -232,7 +232,7 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
           _buildBackButton(),
           Row(
             children: [
-              if (items.isNotEmpty) _buildMoreButton(items),
+              if (items.isNotEmpty) _buildActionButtons(items),
               const SizedBox(width: 12),
               if (_hasChanges) _buildSaveButton(),
             ],
@@ -242,51 +242,39 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
     );
   }
 
-  Widget _buildMoreButton(List<String> items) {
-    return GestureDetector(
-      onTap: () => _showMoreMenu(items),
-      child: Container(
-        width: 36,
-        height: 36,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(color: Color(0x0A000000), blurRadius: 4, offset: Offset(0, 2)),
-          ],
+  Widget _buildActionButtons(List<String> items) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment(0.3, -1.0),
+          end: Alignment(-0.3, 1.0),
+          colors: [Color(0xB8FFFFFF), Color(0x75FFFFFF)],
         ),
-        child: const Icon(Icons.more_vert, color: _editPrimary, size: 22),
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: const Color(0xD9FFFFFF)),
+        boxShadow: const [
+          BoxShadow(color: Color(0x14462D41), blurRadius: 16, offset: Offset(0, 6)),
+        ],
       ),
-    );
-  }
-
-  void _showMoreMenu(List<String> items) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => Container(
-        color: Colors.white,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.content_copy, color: _editPrimary),
-              title: const Text('Duplicate'),
-              onTap: () {
-                Navigator.pop(context);
-                _handleDuplicate();
-              },
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => _handleDuplicate(),
+            child: const SizedBox(
+              width: 44,
+              height: 44,
+              child: Icon(Icons.content_copy, color: _editPrimary, size: 18),
             ),
-            ListTile(
-              leading: const Icon(Icons.delete_outline, color: Color(0xFFE85A8C)),
-              title: const Text('Clear all items'),
-              textColor: const Color(0xFFE85A8C),
-              onTap: () {
-                Navigator.pop(context);
-                _handleClear();
-              },
+          ),
+          GestureDetector(
+            onTap: () => _handleClear(),
+            child: const SizedBox(
+              width: 44,
+              height: 44,
+              child: Icon(Icons.delete_outline, color: _editPrimary, size: 18),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
