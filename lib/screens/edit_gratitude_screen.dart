@@ -9,6 +9,7 @@ import '../widgets/custom_dialog.dart';
 const _editBg = Color(0xFFF2F2F4);
 const _editPrimary = Color(0xFF2A2327);
 const _editHeading = Color(0xFF4A4044);
+const _accentColor = Color(0xFFE85A8C);
 
 class EditGratitudeScreen extends StatefulWidget {
   final Gratitude? gratitude;
@@ -103,74 +104,117 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
     super.dispose();
   }
 
+  bool get _isEditingDisabled {
+    if (widget.gratitude == null) return false;
+    final today = DateTime.now();
+    final createdDate = DateTime.fromMillisecondsSinceEpoch(widget.gratitude!.timestamp);
+    return today.year != createdDate.year ||
+           today.month != createdDate.month ||
+           today.day != createdDate.day;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final items = _getItems();
+
     return Scaffold(
       backgroundColor: _editBg,
       body: SafeArea(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Top bar
+            _buildTopBar(items),
+            // Heading
             Padding(
-              padding: const EdgeInsets.fromLTRB(22, 14, 22, 6),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _buildBackButton(),
-                  _buildSaveButton(),
-                ],
+              padding: const EdgeInsets.fromLTRB(22, 18, 22, 0),
+              child: Text(
+                'what_are_you_grateful_for'.tr(),
+                style: const TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w700,
+                  color: _editHeading,
+                  letterSpacing: -0.42,
+                  height: 1.12,
+                ),
+                textAlign: TextAlign.left,
               ),
             ),
-            // Heading + text field
+            // Items list
             Expanded(
               child: Padding(
-                padding: const EdgeInsets.fromLTRB(26, 18, 26, 40),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      widget.gratitude == null
-                          ? 'what_are_you_grateful_for'.tr()
-                          : 'edit_your_gratitude'.tr(),
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: _editHeading,
-                        letterSpacing: -0.42,
-                        height: 1.12,
-                      ),
-                    ),
-                    const SizedBox(height: 30),
-                    Expanded(
-                      child: TextField(
-                        controller: _controller,
-                        autofocus: true,
-                        maxLines: null,
-                        expands: true,
-                        textAlignVertical: TextAlignVertical.top,
-                        onChanged: _handleTextChanged,
-                        style: const TextStyle(
-                          fontSize: 18.5,
-                          fontWeight: FontWeight.w500,
-                          height: 1.7,
-                          color: _editPrimary,
+                padding: const EdgeInsets.fromLTRB(26, 30, 26, 20),
+                child: items.isEmpty
+                    ? _buildEmptyState()
+                    : SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            for (final item in items)
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      '• ',
+                                      style: TextStyle(
+                                        fontSize: 18.5,
+                                        fontWeight: FontWeight.w500,
+                                        color: _editPrimary,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: Text(
+                                        item,
+                                        style: const TextStyle(
+                                          fontSize: 18.5,
+                                          fontWeight: FontWeight.w500,
+                                          color: _editPrimary,
+                                          height: 1.4,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            if (!_isEditingDisabled)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      '• ',
+                                      style: TextStyle(
+                                        fontSize: 18.5,
+                                        fontWeight: FontWeight.w500,
+                                        color: _accentColor,
+                                      ),
+                                    ),
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _controller,
+                                        autofocus: items.isEmpty,
+                                        maxLines: null,
+                                        onChanged: _handleTextChanged,
+                                        style: const TextStyle(
+                                          fontSize: 18.5,
+                                          fontWeight: FontWeight.w500,
+                                          color: _editPrimary,
+                                          height: 1.4,
+                                        ),
+                                        decoration: const InputDecoration(
+                                          isDense: true,
+                                          contentPadding: EdgeInsets.zero,
+                                          border: InputBorder.none,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
                         ),
-                        decoration: InputDecoration(
-                          hintText: 'gratitude_hint'.tr(),
-                          hintStyle: const TextStyle(
-                            color: Color(0xFFB09AA3),
-                            fontSize: 18.5,
-                            fontWeight: FontWeight.w500,
-                            height: 1.7,
-                          ),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.zero,
-                        ),
                       ),
-                    ),
-                  ],
-                ),
               ),
             ),
           ],
@@ -178,59 +222,207 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
       ),
     );
   }
+
+  Widget _buildTopBar(List<String> items) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(18, 14, 18, 6),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _buildBackButton(),
+          Row(
+            children: [
+              if (items.isNotEmpty) _buildMoreButton(items),
+              const SizedBox(width: 12),
+              if (_hasChanges) _buildSaveButton(),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMoreButton(List<String> items) {
+    return GestureDetector(
+      onTap: () => _showMoreMenu(items),
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(color: Color(0x0A000000), blurRadius: 4, offset: Offset(0, 2)),
+          ],
+        ),
+        child: const Icon(Icons.more_vert, color: _editPrimary, size: 22),
+      ),
+    );
+  }
+
+  void _showMoreMenu(List<String> items) {
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => Container(
+        color: Colors.white,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.content_copy, color: _editPrimary),
+              title: const Text('Duplicate'),
+              onTap: () {
+                Navigator.pop(context);
+                _handleDuplicate();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline, color: Color(0xFFE85A8C)),
+              title: const Text('Clear all items'),
+              textColor: const Color(0xFFE85A8C),
+              onTap: () {
+                Navigator.pop(context);
+                _handleClear();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'gratitude_hint'.tr(),
+          style: const TextStyle(
+            fontSize: 18.5,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFFB09AA3),
+            height: 1.4,
+          ),
+        ),
+        const SizedBox(height: 24),
+        Text(
+          'for_example'.tr(),
+          style: const TextStyle(
+            fontSize: 18.5,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFFA09099),
+            height: 1.4,
+          ),
+        ),
+        const SizedBox(height: 12),
+        _buildExampleItem('My family'),
+        const SizedBox(height: 8),
+        _buildExampleItem('A warm cup of coffee'),
+        const SizedBox(height: 8),
+        _buildExampleItem('A beautiful sunset'),
+        if (!_isEditingDisabled) ...[
+          const SizedBox(height: 24),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                '• ',
+                style: TextStyle(
+                  fontSize: 18.5,
+                  fontWeight: FontWeight.w500,
+                  color: Color(0xFFD2698E),
+                ),
+              ),
+              Expanded(
+                child: TextField(
+                  controller: _controller,
+                  autofocus: true,
+                  maxLines: null,
+                  onChanged: _handleTextChanged,
+                  style: const TextStyle(
+                    fontSize: 18.5,
+                    fontWeight: FontWeight.w500,
+                    color: _editPrimary,
+                    height: 1.4,
+                  ),
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                    border: InputBorder.none,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildExampleItem(String text) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          '• ',
+          style: TextStyle(
+            fontSize: 18.5,
+            fontWeight: FontWeight.w500,
+            color: Color(0xFFA09099),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(
+              fontSize: 18.5,
+              fontWeight: FontWeight.w500,
+              color: Color(0xFFA09099),
+              height: 1.4,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
 
   Widget _buildBackButton() {
     return GestureDetector(
       onTap: _handleBack,
       child: Container(
-        width: 42,
-        height: 42,
-        decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            begin: Alignment(0.3, -1.0),
-            end: Alignment(-0.3, 1.0),
-            colors: [Color(0xB8FFFFFF), Color(0x75FFFFFF)],
-          ),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xD9FFFFFF)),
-          boxShadow: const [
-            BoxShadow(color: Color(0x14462D41), blurRadius: 16, offset: Offset(0, 6)),
+        width: 36,
+        height: 36,
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(color: Color(0x0A000000), blurRadius: 4, offset: Offset(0, 2)),
           ],
         ),
-        child: const Icon(Icons.arrow_back, size: 22, color: Color(0xFF26211E)),
+        child: const Icon(Icons.chevron_left, color: _editPrimary, size: 22),
       ),
     );
   }
 
   Widget _buildSaveButton() {
-    final active = _hasChanges;
     return GestureDetector(
-      onTap: active ? _save : null,
+      onTap: _save,
       child: Container(
-        width: 42,
-        height: 42,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: active
-              ? const LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xFFE580A4), Color(0xFFD2698E)],
-                )
-              : null,
-          color: active ? null : const Color(0xB3DCD8DD),
-          border: Border.all(
-            color: active ? const Color(0x66FFFFFF) : const Color(0x80FFFFFF),
+        width: 36,
+        height: 36,
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFFE580A4), Color(0xFFD2698E)],
           ),
-          boxShadow: active
-              ? [const BoxShadow(color: Color(0x56B2446A), blurRadius: 16, offset: Offset(0, 6))]
-              : null,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(color: Color(0x56B2446A), blurRadius: 16, offset: Offset(0, 6)),
+          ],
         ),
-        child: Icon(
-          Icons.check,
-          size: 22,
-          color: active ? Colors.white : const Color(0xFFAAA1A6),
-        ),
+        child: const Icon(Icons.check, color: Colors.white, size: 18),
       ),
     );
   }
@@ -251,8 +443,9 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
         .toList();
   }
 
+
   void _handleBack() {
-    if (_hasChanges && _controller.text.trim().isNotEmpty) {
+    if (!_isEditingDisabled && _hasChanges && _controller.text.trim().isNotEmpty) {
       showDialog(
         context: context,
         builder: (context) => CustomDialog(
@@ -306,5 +499,71 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
       bloc.add(UpdateGratitude(gratitude));
     }
     if (mounted) Navigator.pop(context);
+  }
+
+  void _handleDuplicate() {
+    final items = _getItems();
+    if (items.isEmpty) return;
+
+    showDialog(
+      context: context,
+      builder: (context) => CustomDialog(
+        title: 'duplicate_gratitude_title'.tr(),
+        content: 'duplicate_gratitude_message'.tr(),
+        actions: [
+          CustomDialogAction(
+            label: 'cancel_button'.tr(),
+            onPressed: () => Navigator.pop(context),
+            isPrimary: false,
+          ),
+          CustomDialogAction(
+            label: 'duplicate_button'.tr(),
+            onPressed: () {
+              Navigator.pop(context);
+
+              final gratitude = Gratitude(
+                id: null,
+                timestamp: DateTime.now().millisecondsSinceEpoch,
+                items: items,
+              );
+
+              if (mounted) {
+                final bloc = context.read<GratitudeBloc>();
+                bloc.add(AddGratitude(gratitude));
+                Navigator.pop(context);
+              }
+            },
+            isPrimary: true,
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _handleClear() {
+    showDialog(
+      context: context,
+      builder: (context) => CustomDialog(
+        title: 'clear_gratitude_title'.tr(),
+        content: 'clear_gratitude_message'.tr(),
+        actions: [
+          CustomDialogAction(
+            label: 'cancel_button'.tr(),
+            onPressed: () => Navigator.pop(context),
+            isPrimary: false,
+          ),
+          CustomDialogAction(
+            label: 'clear_button'.tr(),
+            onPressed: () {
+              Navigator.pop(context);
+              _controller.clear();
+              _previousText = '';
+              setState(() {});
+            },
+            isPrimary: true,
+          ),
+        ],
+      ),
+    );
   }
 }
