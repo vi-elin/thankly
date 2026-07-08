@@ -325,7 +325,7 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
-              isPrimary: true,
+              isAccentSecondary: true,
             ),
           ],
         ),
@@ -385,8 +385,8 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
     showDialog(
       context: context,
       builder: (context) => CustomDialog(
-        title: 'clear_gratitude_title'.tr(),
-        content: 'clear_gratitude_message'.tr(),
+        title: 'delete_gratitude_title'.tr(),
+        content: 'delete_gratitude_message'.tr(),
         actions: [
           CustomDialogAction(
             label: 'cancel_button'.tr(),
@@ -394,14 +394,15 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
             isPrimary: false,
           ),
           CustomDialogAction(
-            label: 'clear_button'.tr(),
+            label: 'delete_button'.tr(),
             onPressed: () {
               Navigator.pop(context);
-              _controller.clear();
-              _previousText = '';
-              setState(() {});
+              if (widget.gratitude?.id != null) {
+                context.read<GratitudeBloc>().add(DeleteGratitude(widget.gratitude!.id!));
+              }
+              Navigator.pop(context);
             },
-            isPrimary: true,
+            isDestructive: true,
           ),
         ],
       ),

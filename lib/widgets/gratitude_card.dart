@@ -3,6 +3,7 @@ import '../models/gratitude.dart';
 
 const _cardTextPrimary = Color(0xFF352D31);
 const _cardTextSecondary = Color(0xFF9A9096);
+const _cardTimeColor = Color(0xFFC1BAC0);
 const _bulletColor = Color(0xFFE58BAC);
 const int _maxVisibleItems = 5;
 
@@ -46,7 +47,7 @@ class GratitudeCard extends StatelessWidget {
           children: [
             // Visible gratitude items
             for (int i = 0; i < visibleItems.length; i++) ...[
-              if (i > 0) const SizedBox(height: 12),
+              if (i > 0) const SizedBox(height: 8),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -97,7 +98,7 @@ class GratitudeCard extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
-                    color: _cardTextSecondary,
+                    color: _cardTimeColor,
                   ),
                 ),
               ],

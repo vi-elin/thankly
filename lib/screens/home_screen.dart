@@ -269,9 +269,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                     margin: const EdgeInsets.only(right: 18, bottom: 13),
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFFE580A4), Color(0xFFD2698E)],
-                      ),
+                      color: const Color(0xFFE04C5A),
                       borderRadius: BorderRadius.circular(22),
                     ),
                     child: const Icon(Icons.delete_outline, color: Colors.white, size: 20),
@@ -342,7 +340,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
           CustomDialogAction(
             label: 'delete_button'.tr(),
             onPressed: () => Navigator.pop(context, true),
-            isPrimary: true,
+            isDestructive: true,
           ),
         ],
       ),
