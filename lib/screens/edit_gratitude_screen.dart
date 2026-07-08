@@ -6,6 +6,7 @@ import '../models/gratitude.dart';
 import '../bloc/gratitude_bloc.dart';
 import '../bloc/gratitude_event.dart';
 import '../widgets/custom_dialog.dart';
+import '../widgets/app_toast.dart';
 
 const _editBg = Color(0xFFF2F2F4);
 const _editPrimary = Color(0xFF2A2327);
@@ -338,12 +339,7 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
   void _save() async {
     final items = _getItems();
     if (items.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('please_add_at_least_one_item'.tr()),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      AppToast.error(context, 'please_add_at_least_one_item'.tr());
       return;
     }
 
@@ -371,13 +367,7 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
     Clipboard.setData(ClipboardData(text: text));
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Copied'),
-          behavior: SnackBarBehavior.floating,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      AppToast.success(context, 'copied_to_clipboard'.tr());
     }
   }
 

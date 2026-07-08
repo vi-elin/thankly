@@ -5,6 +5,7 @@ import '../services/settings_service.dart';
 import '../services/notification_service.dart';
 import '../services/firebase_service.dart';
 import '../core/di/injection.dart';
+import '../widgets/app_toast.dart';
 
 const _accent        = Color(0xFFE85A8C);
 // ignore: unused_element
@@ -675,12 +676,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('could_not_open_link'.tr()),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        AppToast.error(context, 'could_not_open_link'.tr());
       }
     }
   }

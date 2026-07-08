@@ -14,6 +14,7 @@ import '../services/notification_service.dart';
 import '../services/firebase_service.dart';
 import '../models/gratitude.dart';
 import '../widgets/custom_dialog.dart';
+import '../widgets/app_toast.dart';
 
 const _homePrimary = Color(0xFF211A1C);
 const _homeSecondary = Color(0xFF8A8086);
@@ -349,28 +350,15 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   void _deleteGratitude(BuildContext context, Gratitude gratitude) {
     context.read<GratitudeBloc>().add(DeleteGratitude(gratitude.id!));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('gratitude_deleted'.tr()),
-        behavior: SnackBarBehavior.floating,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    AppToast.success(context, 'gratitude_deleted'.tr());
   }
 
   void _confirmAndDelete(BuildContext context, Gratitude gratitude) async {
     final bloc = context.read<GratitudeBloc>();
-    final messenger = ScaffoldMessenger.of(context);
     final confirmed = await _showDeleteConfirmation(context);
     if (confirmed == true && mounted) {
       bloc.add(DeleteGratitude(gratitude.id!));
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text('gratitude_deleted'.tr()),
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 2),
-        ),
-      );
+      AppToast.success(context, 'gratitude_deleted'.tr());
     }
   }
 
