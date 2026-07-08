@@ -48,6 +48,12 @@ class NotificationService {
   // Track if we've already handled the launch notification to prevent duplicates
   bool _hasHandledLaunchNotification = false;
 
+  // Track if we've already checked the getNotificationAppLaunchDetails() fallback.
+  // That API returns the SAME cached response for the entire app process lifetime,
+  // so it must only ever be consulted once per process or it will keep re-saving
+  // the same notification on every foreground resume.
+  bool _hasCheckedLaunchDetailsFallback = false;
+
   Future<void> initialize() async {
     debugPrint('\n========== NOTIFICATION SERVICE INITIALIZATION ==========');
 
@@ -103,6 +109,10 @@ class NotificationService {
     final details = await _notifications.getNotificationAppLaunchDetails();
     debugPrint(
         'Launch details: didNotificationLaunchApp=${details?.didNotificationLaunchApp}');
+    // getNotificationAppLaunchDetails() returns the same cached value for the
+    // whole process lifetime, so mark it as checked now to prevent the
+    // checkAndHandlePendingNotification() fallback from re-processing it later.
+    _hasCheckedLaunchDetailsFallback = true;
 
     if (details != null && details.didNotificationLaunchApp) {
       final response = details.notificationResponse;
@@ -195,7 +205,17 @@ class NotificationService {
       debugPrint('>>> Error checking UserDefaults: $e');
     }
 
-    // Fallback: Try the standard flutter_local_notifications approach
+    // Fallback: Try the standard flutter_local_notifications approach.
+    // getNotificationAppLaunchDetails() caches the ORIGINAL launch response for
+    // the entire app process lifetime, so this must only run once per process -
+    // otherwise every foreground resume re-saves the same notification.
+    if (_hasCheckedLaunchDetailsFallback) {
+      debugPrint(
+          '>>> Launch details fallback already checked for this app session, skipping');
+      return;
+    }
+    _hasCheckedLaunchDetailsFallback = true;
+
     try {
       final details = await _notifications.getNotificationAppLaunchDetails();
       debugPrint(
