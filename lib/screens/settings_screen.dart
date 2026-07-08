@@ -93,9 +93,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         elevation: 0,
         scrolledUnderElevation: 0,
         centerTitle: true,
-        leading: GestureDetector(
-          onTap: () => Navigator.pop(context),
-          child: Center(
+        leadingWidth: 62,
+        leading: Padding(
+          padding: const EdgeInsets.only(left: 18),
+          child: GestureDetector(
+            onTap: () => Navigator.pop(context),
             child: Container(
               width: 44,
               height: 44,
