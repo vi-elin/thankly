@@ -107,6 +107,7 @@ flutter:
   # Assets for localization
   assets:
     - assets/translations/
+    - assets/onboarding/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

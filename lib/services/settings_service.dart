@@ -13,9 +13,19 @@ class SettingsService {
   static const String _keyGratitudeReminderRegularity =
       'gratitude_reminder_regularity';
 
+  static const String _keyHasCompletedOnboarding = 'has_completed_onboarding';
+
   final SharedPreferences _prefs;
 
   SettingsService(this._prefs);
+
+  // Onboarding
+  bool get hasCompletedOnboarding =>
+      _prefs.getBool(_keyHasCompletedOnboarding) ?? false;
+
+  Future<void> setHasCompletedOnboarding(bool completed) async {
+    await _prefs.setBool(_keyHasCompletedOnboarding, completed);
+  }
 
   // Daily Reminder Settings
   bool get isDailyReminderEnabled =>

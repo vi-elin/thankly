@@ -11,6 +11,38 @@ import '../widgets/app_toast.dart';
 const _editBg = Color(0xFFF2F2F4);
 const _editPrimary = Color(0xFF2A2327);
 const _editHeading = Color(0xFF4A4044);
+// Matches gratitude_card.dart's bullet dot color, so bullets look the same
+// on the edit screen as they do on the home screen's gratitude cards.
+const _editBulletColor = Color(0xFFE58BAC);
+
+/// Renders "• " line prefixes in [_editBulletColor] while leaving the rest
+/// of the text in the field's normal style.
+class _BulletTextEditingController extends TextEditingController {
+  _BulletTextEditingController({super.text});
+
+  @override
+  TextSpan buildTextSpan({
+    required BuildContext context,
+    TextStyle? style,
+    required bool withComposing,
+  }) {
+    final lines = text.split('\n');
+    final children = <TextSpan>[];
+    for (int i = 0; i < lines.length; i++) {
+      final line = lines[i];
+      if (line.startsWith('• ')) {
+        children.add(TextSpan(text: '• ', style: style?.copyWith(color: _editBulletColor)));
+        children.add(TextSpan(text: line.substring(2), style: style));
+      } else {
+        children.add(TextSpan(text: line, style: style));
+      }
+      if (i != lines.length - 1) {
+        children.add(TextSpan(text: '\n', style: style));
+      }
+    }
+    return TextSpan(style: style, children: children);
+  }
+}
 
 class EditGratitudeScreen extends StatefulWidget {
   final Gratitude? gratitude;
@@ -22,7 +54,7 @@ class EditGratitudeScreen extends StatefulWidget {
 }
 
 class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
-  late TextEditingController _controller;
+  late _BulletTextEditingController _controller;
   bool _isProcessingChange = false;
   String _previousText = '';
 
@@ -32,7 +64,7 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
     final items = widget.gratitude?.items ?? [];
     final initialText = items.isEmpty ? '' : items.map((item) => '• $item').join('\n');
     _previousText = initialText;
-    _controller = TextEditingController(text: initialText);
+    _controller = _BulletTextEditingController(text: initialText);
   }
 
   bool get _hasChanges {

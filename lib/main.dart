@@ -5,10 +5,15 @@ import 'core/di/injection.dart';
 import 'bloc/gratitude_bloc.dart';
 import 'bloc/gratitude_event.dart';
 import 'screens/home_screen.dart';
+import 'screens/onboarding_screen.dart';
 import 'services/notification_service.dart';
 import 'services/settings_service.dart';
 import 'services/firebase_service.dart';
 import 'widgets/app_version_checker.dart';
+
+// TESTING ONLY: forces the onboarding flow to show on every app launch,
+// regardless of SettingsService.hasCompletedOnboarding. Set to false before shipping.
+const bool kAlwaysShowOnboardingForTesting = true;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -116,7 +121,10 @@ class _MyAppState extends State<MyApp> {
           scaffoldBackgroundColor: Colors.grey[50],
         ),
         home: AppVersionChecker(
-          child: const HomeScreen(),
+          child: kAlwaysShowOnboardingForTesting ||
+                  !getIt<SettingsService>().hasCompletedOnboarding
+              ? const OnboardingScreen()
+              : const HomeScreen(),
         ),
       ),
     );

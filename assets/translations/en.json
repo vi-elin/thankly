@@ -56,5 +56,16 @@
     "later": "Later",
     "ok": "OK",
     "current_version": "Current version",
-    "latest_version": "Latest version"
+    "latest_version": "Latest version",
+    "onboarding_skip": "Skip",
+    "onboarding_continue": "Continue",
+    "onboarding_get_started": "Get Started",
+    "onboarding_title_1": "Capture the good in every day",
+    "onboarding_subtitle_1": "Build a gratitude habit in just a minute a day",
+    "onboarding_title_2": "One line. One gratitude",
+    "onboarding_subtitle_2": "Each new line becomes a separate gratitude",
+    "onboarding_title_3": "Long press to reply",
+    "onboarding_subtitle_3": "Write down a grateful moment without opening the app",
+    "onboarding_title_4": "Build a lasting habit",
+    "onboarding_subtitle_4": "Gentle reminders help you stay consistent without interrupting your day"
 }

@@ -116,8 +116,8 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       return sum + gratitudeList.fold<int>(0, (itemSum, g) => itemSum + g.items.length);
     });
 
-    final daysLabel = daysCount == 1 ? 'day' : 'days';
-    final gratitudeLabel = totalItems == 1 ? 'gratitude' : 'gratitudes';
+    final daysLabel = daysCount == 1 ? 'Grateful Day' : 'Grateful Days';
+    final gratitudeLabel = totalItems == 1 ? 'Gratitude' : 'Gratitudes';
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 14, 24, 10),

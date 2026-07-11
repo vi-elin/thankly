@@ -57,5 +57,16 @@
     "later": "Пізніше",
     "ok": "OK",
     "current_version": "Поточна версія",
-    "latest_version": "Остання версія"
+    "latest_version": "Остання версія",
+    "onboarding_skip": "Пропустити",
+    "onboarding_continue": "Далі",
+    "onboarding_get_started": "Почати",
+    "onboarding_title_1": "Фіксуйте хороше щодня",
+    "onboarding_subtitle_1": "Формуйте звичку вдячності всього за хвилину на день",
+    "onboarding_title_2": "Один рядок. Один запис вдячності",
+    "onboarding_subtitle_2": "Кожен новий рядок стає окремим записом вдячності",
+    "onboarding_title_3": "Затисніть, щоб відповісти",
+    "onboarding_subtitle_3": "Запишіть момент вдячності, не відкриваючи додаток",
+    "onboarding_title_4": "Сформуйте стійку звичку",
+    "onboarding_subtitle_4": "Делікатні нагадування допоможуть залишатися послідовними, не заважаючи вашому дню"
 }
