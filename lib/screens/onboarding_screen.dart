@@ -8,12 +8,12 @@ const _obPrimary = Color(0xFF211A1C);
 const _obHeading = Color(0xFF4A4044);
 const _obSecondary = Color(0xFF8A8086);
 const _obBullet = Color(0xFFE58BAC);
-const _obAccent = Color(0xFFE85A8C);
 const _obFaint = Color(0xFFC1BAC0);
 const _obSectionLabel = Color(0xFF7A7177);
 const _obCardText = Color(0xFF352D31);
-const _obListText = Color(0xFF2A2327);
 const _obPlaceholder = Color(0xFFB09AA3);
+// Softer dark gray for gratitude item text, matching edit_gratitude_screen.dart.
+const _obItemText = Color(0xFF3C3438);
 
 const _obAccentGradient = LinearGradient(
   begin: Alignment.topCenter,
@@ -249,6 +249,16 @@ class _BottomBar extends StatelessWidget {
 // the example and the title/description below it.
 const _obMockupMaxHeight = 300.0;
 
+// Fixed height reserved for the title + subtitle block, sized just large
+// enough for the longest title/subtitle combo across every onboarding page
+// and locale. Reserving a constant height here (rather than letting the
+// mockup's Expanded region size itself around however tall the title and
+// subtitle happen to be) keeps the mockup's flexible area the same size on
+// every page, so the title always starts at the same vertical position
+// regardless of how much its own text wraps. Kept tight (not padded out
+// further) so the block sits close to the continue button and dots below it.
+const _obTitleBlockHeight = 155.0;
+
 class _PageScaffold extends StatelessWidget {
   final String imagePath;
   final Widget mockup;
@@ -267,7 +277,7 @@ class _PageScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(30, 64, 30, 168),
+      padding: const EdgeInsets.fromLTRB(30, 64, 30, 128),
       child: Column(
         children: [
           Expanded(
@@ -282,26 +292,33 @@ class _PageScaffold extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 30),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 29,
-              fontWeight: FontWeight.w800,
-              color: _obPrimary,
-              letterSpacing: -0.7,
-              height: 1.12,
-            ),
-          ),
-          const SizedBox(height: 14),
-          Text(
-            subtitle,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: _obSecondary,
-              height: 1.5,
+          SizedBox(
+            height: _obTitleBlockHeight,
+            child: Column(
+              children: [
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    color: _obPrimary,
+                    letterSpacing: -0.7,
+                    height: 1.12,
+                  ),
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: _obSecondary,
+                    height: 1.5,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -383,21 +400,21 @@ class _WelcomePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const Center(
+              Center(
                 child: Column(
                   children: [
-                    Text('62 Gratitudes',
-                        style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500, color: _obSecondary)),
-                    SizedBox(height: 2),
-                    Text('28 Grateful Days',
-                        style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500, color: _obSecondary)),
+                    Text('onboarding_example_gratitudes_count'.tr(),
+                        style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500, color: _obSecondary)),
+                    const SizedBox(height: 2),
+                    Text('onboarding_example_grateful_days'.tr(),
+                        style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w500, color: _obSecondary)),
                   ],
                 ),
               ),
               const SizedBox(height: 18),
               Padding(
                 padding: const EdgeInsets.only(left: 4, bottom: 10),
-                child: Text('TODAY',
+                child: Text('today'.tr(),
                     style: const TextStyle(
                         fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.68, color: _obSectionLabel)),
               ),
@@ -412,13 +429,13 @@ class _WelcomePage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _cardLine('My sister called'),
-                    _cardLine('Someone smiled at me'),
-                    _cardLine('Beautiful sunset on the way home'),
+                    _cardLine('onboarding_example_item_1'.tr()),
+                    _cardLine('onboarding_example_item_2'.tr()),
+                    _cardLine('onboarding_example_item_3'.tr()),
                     const SizedBox(height: 4),
                     Align(
                       alignment: Alignment.centerRight,
-                      child: Text('8:57 PM',
+                      child: Text('onboarding_example_time_1'.tr(),
                           style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: _obFaint)),
                     ),
                   ],
@@ -434,12 +451,12 @@ class _WelcomePage extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _cardLine('Morning coffee tasted especially good'),
-                    _cardLine('Fresh air on my walk'),
+                    _cardLine('onboarding_example_item_4'.tr()),
+                    _cardLine('onboarding_example_item_5'.tr()),
                     const SizedBox(height: 4),
                     Align(
                       alignment: Alignment.centerRight,
-                      child: Text('9:08 AM',
+                      child: Text('onboarding_example_time_2'.tr(),
                           style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: _obFaint)),
                     ),
                   ],
@@ -460,12 +477,18 @@ class _OneLinePage extends StatelessWidget {
 
   static Widget _typedLine(String text, {bool showCursor = false}) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical: 2),
       child: Row(
         children: [
-          Text('• $text',
-              style: const TextStyle(
-                  fontSize: 17, fontWeight: FontWeight.w500, height: 1.5, letterSpacing: -0.2, color: _obListText)),
+          Text.rich(
+            TextSpan(
+              style: const TextStyle(fontSize: 17, height: 1.55, letterSpacing: -0.2),
+              children: [
+                const TextSpan(text: '• ', style: TextStyle(fontWeight: FontWeight.w600, color: _obBullet)),
+                TextSpan(text: text, style: const TextStyle(fontWeight: FontWeight.w400, color: _obItemText)),
+              ],
+            ),
+          ),
           if (showCursor) const _BlinkingCursor(),
         ],
       ),
@@ -486,15 +509,8 @@ class _OneLinePage extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration:
-                        const BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: _flatCardShadow),
-                    child: const Icon(Icons.chevron_left, size: 19, color: _obListText),
-                  ),
                   Container(
                     width: 38,
                     height: 38,
@@ -513,12 +529,17 @@ class _OneLinePage extends StatelessWidget {
               Text(
                 'what_are_you_grateful_for'.tr(),
                 style: const TextStyle(
-                    fontSize: 20, fontWeight: FontWeight.w700, color: _obHeading, letterSpacing: -0.5, height: 1.12),
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: _obHeading,
+                  letterSpacing: -0.5,
+                  height: 1.12,
+                ),
               ),
-              const SizedBox(height: 10),
-              _typedLine('My family'),
-              _typedLine('Morning coffee'),
-              _typedLine('A beautiful sunset', showCursor: true),
+              const SizedBox(height: 16),
+              _typedLine('onboarding_example_line_1'.tr()),
+              _typedLine('onboarding_example_line_2'.tr()),
+              _typedLine('onboarding_example_line_3'.tr(), showCursor: true),
             ],
           ),
         ),
@@ -559,7 +580,7 @@ class _BlinkingCursorState extends State<_BlinkingCursor> with SingleTickerProvi
           final visible = _controller.value < 0.5;
           return Opacity(
             opacity: visible ? 1 : 0,
-            child: Container(width: 2, height: 17, color: _obAccent),
+            child: Container(width: 2, height: 17, color: _obBullet),
           );
         },
       ),
@@ -611,20 +632,22 @@ class _NotificationPage extends StatelessWidget {
                     child: const Icon(Icons.auto_awesome, size: 19, color: Colors.white),
                   ),
                   const SizedBox(width: 11),
-                  const Expanded(
-                    child: Text('GRATITUDE',
-                        style: TextStyle(
+                  Expanded(
+                    child: Text('onboarding_notification_label'.tr(),
+                        style: const TextStyle(
                             fontSize: 14, fontWeight: FontWeight.w700, color: _obPrimary, letterSpacing: 0.2)),
                   ),
-                  const Text('now', style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w500, color: _obSecondary)),
+                  Text('onboarding_notification_time_now'.tr(),
+                      style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w500, color: _obSecondary)),
                 ],
               ),
               const SizedBox(height: 11),
-              const Text('What made you smile today?',
-                  style: TextStyle(fontSize: 15.5, fontWeight: FontWeight.w700, color: _obPrimary)),
+              Text('onboarding_notification_title'.tr(),
+                  style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w700, color: _obPrimary)),
               const SizedBox(height: 3),
-              const Text('Tap to capture a grateful moment.',
-                  style: TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500, color: Color(0xFF6C6166), height: 1.4)),
+              Text('onboarding_notification_subtitle'.tr(),
+                  style: const TextStyle(
+                      fontSize: 14.5, fontWeight: FontWeight.w500, color: Color(0xFF6C6166), height: 1.4)),
               const SizedBox(height: 13),
               Container(
                 padding: const EdgeInsets.fromLTRB(16, 6, 6, 6),
@@ -721,7 +744,7 @@ class _RemindersPage extends StatelessWidget {
                 icon: Icons.calendar_today_outlined,
                 title: 'daily_reminder_title'.tr(),
                 description: 'daily_reminder_description'.tr(),
-                expandedContent: _SettingsTimeSection(timeLabel: '5:00 PM'),
+                expandedContent: _SettingsTimeSection(timeLabel: 'onboarding_example_reminder_time'.tr()),
               ),
             ],
           ),
