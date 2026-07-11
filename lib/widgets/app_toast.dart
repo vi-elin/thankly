@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 
 enum AppToastType { success, error, info }
@@ -14,8 +15,11 @@ const _toastInfoIcon = Color(0xFFE85A8C);
 
 /// App-wide toast notifications matching the app's card/dialog visual language:
 /// white rounded surface, soft plum-tinted shadow, tinted icon badge.
+/// Shown as a top-anchored overlay (swipe up to dismiss).
 class AppToast {
   AppToast._();
+
+  static OverlayEntry? _currentEntry;
 
   static void show(
     BuildContext context,
@@ -23,28 +27,29 @@ class AppToast {
     AppToastType type = AppToastType.info,
     Duration? duration,
   }) {
-    final messenger = ScaffoldMessenger.of(context);
-    messenger.hideCurrentSnackBar();
-    messenger.showSnackBar(
-      SnackBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        behavior: SnackBarBehavior.floating,
-        // Match the content's own shape so the SnackBar's Material doesn't
-        // fall back to its default (differently-rounded) corner shape.
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(_toastRadius),
-        ),
-        padding: EdgeInsets.zero,
-        margin: const EdgeInsets.fromLTRB(18, 0, 18, 18),
+    _currentEntry?.remove();
+    _currentEntry = null;
+
+    final overlay = Overlay.of(context, rootOverlay: true);
+    late final OverlayEntry entry;
+    entry = OverlayEntry(
+      builder: (context) => _ToastOverlay(
+        message: message,
+        type: type,
         duration: duration ??
             (type == AppToastType.error
                 ? const Duration(seconds: 3)
                 : const Duration(seconds: 2)),
-        dismissDirection: DismissDirection.down,
-        content: _ToastContent(message: message, type: type),
+        onRemove: () {
+          if (_currentEntry == entry) {
+            _currentEntry = null;
+          }
+          entry.remove();
+        },
       ),
     );
+    _currentEntry = entry;
+    overlay.insert(entry);
   }
 
   static void success(BuildContext context, String message) =>
@@ -55,6 +60,102 @@ class AppToast {
 
   static void info(BuildContext context, String message) =>
       show(context, message, type: AppToastType.info);
+}
+
+class _ToastOverlay extends StatefulWidget {
+  final String message;
+  final AppToastType type;
+  final Duration duration;
+  final VoidCallback onRemove;
+
+  const _ToastOverlay({
+    required this.message,
+    required this.type,
+    required this.duration,
+    required this.onRemove,
+  });
+
+  @override
+  State<_ToastOverlay> createState() => _ToastOverlayState();
+}
+
+class _ToastOverlayState extends State<_ToastOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<Offset> _offset;
+  late final Animation<double> _opacity;
+  Timer? _timer;
+  bool _dismissing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 220),
+      reverseDuration: const Duration(milliseconds: 180),
+    );
+    _offset = Tween<Offset>(begin: const Offset(0, -1), end: Offset.zero)
+        .animate(CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    ));
+    _opacity = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOut,
+      reverseCurve: Curves.easeIn,
+    );
+    _controller.forward();
+    _timer = Timer(widget.duration, _dismiss);
+  }
+
+  Future<void> _dismiss() async {
+    if (_dismissing) return;
+    _dismissing = true;
+    _timer?.cancel();
+    await _controller.reverse();
+    widget.onRemove();
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      top: 0,
+      left: 0,
+      right: 0,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(18, 12, 18, 0),
+          child: SlideTransition(
+            position: _offset,
+            child: FadeTransition(
+              opacity: _opacity,
+              child: Material(
+                type: MaterialType.transparency,
+                child: GestureDetector(
+                  onVerticalDragEnd: (details) {
+                    if ((details.primaryVelocity ?? 0) < -200) {
+                      _dismiss();
+                    }
+                  },
+                  child: _ToastContent(message: widget.message, type: widget.type),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _ToastContent extends StatelessWidget {
