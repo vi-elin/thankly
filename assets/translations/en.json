@@ -80,9 +80,10 @@
     "onboarding_example_line_1": "My family",
     "onboarding_example_line_2": "Morning coffee",
     "onboarding_example_line_3": "A beautiful sunset",
-    "onboarding_notification_label": "GRATITUDE",
     "onboarding_notification_time_now": "now",
-    "onboarding_notification_title": "What made you smile today?",
-    "onboarding_notification_subtitle": "Tap to capture a grateful moment.",
+    "onboarding_notification_title": "Time for Gratitude",
+    "onboarding_notification_subtitle": "Take a moment to reflect on what you're grateful for today.",
+    "onboarding_example_reply": "A beautiful sunset today",
+    "onboarding_send": "Send",
     "onboarding_example_reminder_time": "5:00 PM"
 }

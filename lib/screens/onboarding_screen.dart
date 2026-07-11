@@ -11,7 +11,6 @@ const _obBullet = Color(0xFFE58BAC);
 const _obFaint = Color(0xFFC1BAC0);
 const _obSectionLabel = Color(0xFF7A7177);
 const _obCardText = Color(0xFF352D31);
-const _obPlaceholder = Color(0xFFB09AA3);
 // Softer dark gray for gratitude item text, matching edit_gratitude_screen.dart.
 const _obItemText = Color(0xFF3C3438);
 
@@ -593,6 +592,14 @@ class _BlinkingCursorState extends State<_BlinkingCursor> with SingleTickerProvi
 class _NotificationPage extends StatelessWidget {
   const _NotificationPage();
 
+  static const _cardDecoration = BoxDecoration(
+    color: Color(0xF2FFFFFF),
+    borderRadius: BorderRadius.all(Radius.circular(24)),
+    boxShadow: [
+      BoxShadow(color: Color(0x26462D41), blurRadius: 34, offset: Offset(0, 16)),
+    ],
+  );
+
   @override
   Widget build(BuildContext context) {
     return _PageScaffold(
@@ -601,84 +608,115 @@ class _NotificationPage extends StatelessWidget {
       subtitle: 'onboarding_subtitle_3'.tr(),
       mockup: SizedBox(
         width: 280,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(16, 15, 16, 15),
-          decoration: BoxDecoration(
-            color: const Color(0xB8FFFFFF),
-            borderRadius: BorderRadius.circular(26),
-            boxShadow: const [
-              BoxShadow(color: Color(0x33462D41), blurRadius: 40, offset: Offset(0, 18)),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // System push notification banner.
+            Container(
+              padding: const EdgeInsets.fromLTRB(14, 14, 15, 15),
+              decoration: _cardDecoration,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
-                    width: 38,
-                    height: 38,
+                    width: 40,
+                    height: 40,
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        begin: Alignment(-0.87, -0.5),
-                        end: Alignment(0.87, 0.5),
-                        colors: [Color(0xFFF7C6DC), Color(0xFFE58BAC)],
-                      ),
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(11),
                       boxShadow: const [
-                        BoxShadow(color: Color(0x48B2446A), blurRadius: 8, offset: Offset(0, 3)),
+                        BoxShadow(color: Color(0x1F462D41), blurRadius: 6, offset: Offset(0, 2)),
                       ],
                     ),
-                    child: const Icon(Icons.auto_awesome, size: 19, color: Colors.white),
+                    child: Image.asset('assets/icon/app_icon.png'),
                   ),
                   const SizedBox(width: 11),
                   Expanded(
-                    child: Text('onboarding_notification_label'.tr(),
-                        style: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w700, color: _obPrimary, letterSpacing: 0.2)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Expanded(
+                              child: Text('onboarding_notification_title'.tr(),
+                                  style: const TextStyle(
+                                      fontSize: 15.5, fontWeight: FontWeight.w700, color: _obPrimary)),
+                            ),
+                            const SizedBox(width: 8),
+                            Text('onboarding_notification_time_now'.tr(),
+                                style:
+                                    const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: _obSecondary)),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Text('onboarding_notification_subtitle'.tr(),
+                            style: const TextStyle(
+                                fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF6C6166), height: 1.35)),
+                      ],
+                    ),
                   ),
-                  Text('onboarding_notification_time_now'.tr(),
-                      style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w500, color: _obSecondary)),
                 ],
               ),
-              const SizedBox(height: 11),
-              Text('onboarding_notification_title'.tr(),
-                  style: const TextStyle(fontSize: 15.5, fontWeight: FontWeight.w700, color: _obPrimary)),
-              const SizedBox(height: 3),
-              Text('onboarding_notification_subtitle'.tr(),
-                  style: const TextStyle(
-                      fontSize: 14.5, fontWeight: FontWeight.w500, color: Color(0xFF6C6166), height: 1.4)),
-              const SizedBox(height: 13),
-              Container(
-                padding: const EdgeInsets.fromLTRB(16, 6, 6, 6),
+            ),
+            // Dotted connector hinting the banner expands into the reply field.
+            SizedBox(
+              height: 38,
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(
+                    5,
+                    (_) => Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      child: Container(
+                        width: 3,
+                        height: 3,
+                        decoration: const BoxDecoration(color: _obFaint, shape: BoxShape.circle),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Expanded quick-reply field, iOS notification style: a single
+            // full-width fill with the typed text and Send action inside it.
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: _cardDecoration,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(14, 11, 14, 11),
                 decoration: BoxDecoration(
-                  color: const Color(0xE6F0F0F3),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xB3FFFFFF)),
+                  color: const Color(0xFFF2F1F4),
+                  borderRadius: BorderRadius.circular(16),
                 ),
                 child: Row(
                   children: [
                     Expanded(
-                      child: Text('${'edit_your_gratitude'.tr()}…',
-                          style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w500, color: _obPlaceholder)),
-                    ),
-                    Container(
-                      width: 32,
-                      height: 32,
-                      decoration: BoxDecoration(
-                        gradient: _obAccentGradient,
-                        shape: BoxShape.circle,
-                        boxShadow: const [
-                          BoxShadow(color: Color(0x52B2446A), blurRadius: 10, offset: Offset(0, 4)),
+                      child: Row(
+                        children: [
+                          Flexible(
+                            child: Text('onboarding_example_reply'.tr(),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontSize: 14.5, fontWeight: FontWeight.w500, color: _obCardText)),
+                          ),
+                          const _BlinkingCursor(),
                         ],
                       ),
-                      child: const Icon(Icons.arrow_upward, size: 16, color: Colors.white),
                     ),
+                    const SizedBox(width: 8),
+                    Text('onboarding_send'.tr(),
+                        style: const TextStyle(fontSize: 16.5, fontWeight: FontWeight.w600, color: _obBullet)),
                   ],
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

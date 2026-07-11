@@ -1,7 +1,9 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/widgets.dart';
 import 'dart:async';
+import 'dart:convert';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'dart:io' show Platform;
@@ -54,6 +56,28 @@ class NotificationService {
   // the same notification on every foreground resume.
   bool _hasCheckedLaunchDetailsFallback = false;
 
+  // Reads the localized "Save" label for the iOS quick-reply button.
+  //
+  // This runs before EasyLocalization's widget tree is mounted (notification
+  // categories must be registered during initialize(), which happens ahead
+  // of runApp), so 'save_button'.tr() isn't reliable here. Instead we read
+  // the saved locale directly from SharedPreferences (the key EasyLocalization
+  // persists it under) and load the matching translation file ourselves.
+  Future<String> _localizedSaveButtonTitle() async {
+    const fallback = 'Save';
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final localeCode = prefs.getString('locale') ?? 'en';
+      final json =
+          await rootBundle.loadString('assets/translations/$localeCode.json');
+      final translations = jsonDecode(json) as Map<String, dynamic>;
+      return translations['save_button'] as String? ?? fallback;
+    } catch (e) {
+      debugPrint('Error loading localized save button title: $e');
+      return fallback;
+    }
+  }
+
   Future<void> initialize() async {
     debugPrint('\n========== NOTIFICATION SERVICE INITIALIZATION ==========');
 
@@ -65,6 +89,8 @@ class NotificationService {
     // Android initialization settings
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    final saveButtonTitle = await _localizedSaveButtonTitle();
 
     // iOS initialization settings with text input category
     final iosSettings = DarwinInitializationSettings(
@@ -78,7 +104,7 @@ class NotificationService {
             DarwinNotificationAction.text(
               'quick_add',
               'Quick Add',
-              buttonTitle: 'Add',
+              buttonTitle: saveButtonTitle,
               placeholder: 'What are you grateful for?',
               options: {DarwinNotificationActionOption.foreground},
             ),
@@ -321,7 +347,7 @@ class NotificationService {
   }) async {
     await _notifications.zonedSchedule(
       0, // Notification ID
-      'Time for Gratitude 🌟',
+      'Time for Gratitude',
       'Take a moment to reflect on what you\'re grateful for today',
       _nextInstanceOfTime(hour, minute),
       const NotificationDetails(
@@ -571,7 +597,7 @@ class NotificationService {
 
     await _notifications.zonedSchedule(
       999, // Test notification ID
-      'Time for Gratitude 🌟 [TEST]',
+      'Time for Gratitude [TEST]',
       'Take a moment to reflect on what you\'re grateful for today',
       testTime,
       const NotificationDetails(

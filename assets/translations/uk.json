@@ -81,9 +81,10 @@
     "onboarding_example_line_1": "Моя сім'я",
     "onboarding_example_line_2": "Ранкова кава",
     "onboarding_example_line_3": "Гарний захід сонця",
-    "onboarding_notification_label": "ВДЯЧНІСТЬ",
     "onboarding_notification_time_now": "щойно",
-    "onboarding_notification_title": "Що сьогодні змусило вас усміхнутися?",
-    "onboarding_notification_subtitle": "Торкніться, щоб зафіксувати момент вдячності.",
+    "onboarding_notification_title": "Час для вдячності",
+    "onboarding_notification_subtitle": "Зупиніться на мить і згадайте, за що ви вдячні сьогодні.",
+    "onboarding_example_reply": "Гарний захід сонця сьогодні",
+    "onboarding_send": "Надіслати",
     "onboarding_example_reminder_time": "5:00 PM"
 }
