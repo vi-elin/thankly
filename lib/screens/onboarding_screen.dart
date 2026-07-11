@@ -394,7 +394,7 @@ class _WelcomePage extends StatelessWidget {
       title: 'onboarding_title_1'.tr(),
       subtitle: 'onboarding_subtitle_1'.tr(),
       mockup: _DeviceFrame(
-        width: 375,
+        width: 355,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(20, 20, 20, 22),
           child: Column(
@@ -482,7 +482,7 @@ class _OneLinePage extends StatelessWidget {
         children: [
           Text.rich(
             TextSpan(
-              style: const TextStyle(fontSize: 17, height: 1.55, letterSpacing: -0.2),
+              style: const TextStyle(fontSize: 14, height: 1.55, letterSpacing: -0.2),
               children: [
                 const TextSpan(text: '• ', style: TextStyle(fontWeight: FontWeight.w600, color: _obBullet)),
                 TextSpan(text: text, style: const TextStyle(fontWeight: FontWeight.w400, color: _obItemText)),
@@ -502,7 +502,7 @@ class _OneLinePage extends StatelessWidget {
       title: 'onboarding_title_2'.tr(),
       subtitle: 'onboarding_subtitle_2'.tr(),
       mockup: _DeviceFrame(
-        width: 300,
+        width: 275,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(22, 22, 22, 30),
           child: Column(
@@ -529,7 +529,7 @@ class _OneLinePage extends StatelessWidget {
               Text(
                 'what_are_you_grateful_for'.tr(),
                 style: const TextStyle(
-                  fontSize: 20,
+                  fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: _obHeading,
                   letterSpacing: -0.5,
@@ -701,19 +701,19 @@ final _settingsCardDecoration = BoxDecoration(
     end: Alignment(-0.3, 1.0),
     colors: [Color(0xB8FFFFFF), Color(0x75FFFFFF)],
   ),
-  borderRadius: BorderRadius.circular(26),
+  borderRadius: BorderRadius.circular(23.83),
   border: Border.all(color: const Color(0xD9FFFFFF)),
   boxShadow: const [
-    BoxShadow(color: Color(0x17462D41), blurRadius: 36, offset: Offset(0, 14)),
+    BoxShadow(color: Color(0x17462D41), blurRadius: 33, offset: Offset(0, 12.83)),
   ],
 );
 
 final _settingsSubSectionDecoration = BoxDecoration(
   color: const Color(0xB2EBEBEE),
-  borderRadius: BorderRadius.circular(18),
+  borderRadius: BorderRadius.circular(16.5),
   border: Border.all(color: const Color(0x8CFFFFFF)),
   boxShadow: const [
-    BoxShadow(color: Color(0x0D282832), blurRadius: 2, offset: Offset(0, 1)),
+    BoxShadow(color: Color(0x0D282832), blurRadius: 1.83, offset: Offset(0, 0.92)),
   ],
 );
 
@@ -726,19 +726,19 @@ class _RemindersPage extends StatelessWidget {
       imagePath: 'assets/onboarding/onboarding_4.png',
       title: 'onboarding_title_4'.tr(),
       subtitle: 'onboarding_subtitle_4'.tr(),
-      maxMockupHeight: 460,
+      maxMockupHeight: 421.67,
       mockup: _DeviceFrame(
-        width: 300,
+        width: 275,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 22, 16, 20),
+          padding: const EdgeInsets.fromLTRB(14.67, 20.17, 14.67, 18.33),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
-                padding: const EdgeInsets.only(left: 8, bottom: 12),
+                padding: const EdgeInsets.only(left: 7.33, bottom: 11),
                 child: Text('notifications_header'.tr(),
                     style: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w700, letterSpacing: 1.68, color: _obSectionLabel)),
+                        fontSize: 11, fontWeight: FontWeight.w700, letterSpacing: 1.54, color: _obSectionLabel)),
               ),
               _SettingsNotificationCard(
                 icon: Icons.calendar_today_outlined,
@@ -770,7 +770,7 @@ class _SettingsNotificationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14.67),
       decoration: _settingsCardDecoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -779,43 +779,44 @@ class _SettingsNotificationCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                width: 42,
-                height: 42,
+                width: 38.5,
+                height: 38.5,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     begin: Alignment(-0.87, -0.5),
                     end: Alignment(0.87, 0.5),
                     colors: [Color(0xD9FBDBE9), Color(0x9EF6C8DD)],
                   ),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(12.83),
                   border: Border.all(color: const Color(0xBFFFFFFF)),
                 ),
-                child: Icon(icon, color: const Color(0xFFDB6A92), size: 20),
+                child: Icon(icon, color: const Color(0xFFDB6A92), size: 18.33),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 11),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.only(top: 1),
+                  padding: const EdgeInsets.only(top: 0.92),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(title,
                           style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 14.67,
                               fontWeight: FontWeight.w700,
                               color: _settingsPrimary,
-                              letterSpacing: -0.16)),
-                      const SizedBox(height: 3),
-                      Text(description, style: const TextStyle(fontSize: 12.5, color: _settingsSecondary, height: 1.4)),
+                              letterSpacing: -0.15)),
+                      const SizedBox(height: 2.75),
+                      Text(description,
+                          style: const TextStyle(fontSize: 11.46, color: _settingsSecondary, height: 1.4)),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 7.33),
               const _SettingsToggle(),
             ],
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12.83),
           expandedContent,
         ],
       ),
@@ -829,9 +830,9 @@ class _SettingsToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 46,
-      height: 27,
-      padding: const EdgeInsets.all(3),
+      width: 42.17,
+      height: 24.75,
+      padding: const EdgeInsets.all(2.75),
       alignment: Alignment.centerRight,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(999),
@@ -842,12 +843,12 @@ class _SettingsToggle extends StatelessWidget {
         ),
       ),
       child: Container(
-        width: 21,
-        height: 21,
+        width: 19.25,
+        height: 19.25,
         decoration: const BoxDecoration(
           shape: BoxShape.circle,
           color: Colors.white,
-          boxShadow: [BoxShadow(color: Color(0x38000000), blurRadius: 5, offset: Offset(0, 2))],
+          boxShadow: [BoxShadow(color: Color(0x38000000), blurRadius: 4.58, offset: Offset(0, 1.83))],
         ),
       ),
     );
@@ -862,32 +863,32 @@ class _SettingsTimeSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(13),
+      padding: const EdgeInsets.all(11.92),
       decoration: _settingsSubSectionDecoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(children: [
-            const Icon(Icons.access_time, size: 15, color: _settingsSecondary),
-            const SizedBox(width: 7),
+            const Icon(Icons.access_time, size: 13.75, color: _settingsSecondary),
+            const SizedBox(width: 6.42),
             Text('time_label'.tr(),
                 style: const TextStyle(
-                    fontSize: 12.5, fontWeight: FontWeight.w600, color: _settingsSecondary, letterSpacing: 0.25)),
+                    fontSize: 11.46, fontWeight: FontWeight.w600, color: _settingsSecondary, letterSpacing: 0.23)),
           ]),
-          const SizedBox(height: 10),
+          const SizedBox(height: 9.17),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 13),
+            padding: const EdgeInsets.symmetric(horizontal: 13.75, vertical: 11.92),
             decoration: BoxDecoration(
               color: const Color(0x80FFFFFF),
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(12.83),
               border: Border.all(color: const Color(0xD9FFFFFF)),
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(timeLabel,
-                    style: const TextStyle(fontSize: 17.5, fontWeight: FontWeight.w700, color: _settingsPrimary)),
-                const Icon(Icons.chevron_right, color: _settingsChevron, size: 20),
+                    style: const TextStyle(fontSize: 16.04, fontWeight: FontWeight.w700, color: _settingsPrimary)),
+                const Icon(Icons.chevron_right, color: _settingsChevron, size: 18.33),
               ],
             ),
           ),
