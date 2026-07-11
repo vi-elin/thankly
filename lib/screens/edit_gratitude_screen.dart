@@ -11,6 +11,8 @@ import '../widgets/app_toast.dart';
 const _editBg = Color(0xFFF2F2F4);
 const _editPrimary = Color(0xFF2A2327);
 const _editHeading = Color(0xFF4A4044);
+// Softer dark gray for gratitude item text, lighter than _editPrimary.
+const _editItemText = Color(0xFF3C3438);
 // Matches gratitude_card.dart's bullet dot color, so bullets look the same
 // on the edit screen as they do on the home screen's gratitude cards.
 const _editBulletColor = Color(0xFFE58BAC);
@@ -31,7 +33,10 @@ class _BulletTextEditingController extends TextEditingController {
     for (int i = 0; i < lines.length; i++) {
       final line = lines[i];
       if (line.startsWith('• ')) {
-        children.add(TextSpan(text: '• ', style: style?.copyWith(color: _editBulletColor)));
+        children.add(TextSpan(
+          text: '• ',
+          style: style?.copyWith(color: _editBulletColor, fontWeight: FontWeight.w600),
+        ));
         children.add(TextSpan(text: line.substring(2), style: style));
       } else {
         children.add(TextSpan(text: line, style: style));
@@ -198,11 +203,12 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
                   expands: true,
                   textAlignVertical: TextAlignVertical.top,
                   onChanged: _handleTextChanged,
+                  cursorColor: _editBulletColor,
                   style: const TextStyle(
                     fontSize: 18.5,
-                    fontWeight: FontWeight.w500,
-                    height: 1.7,
-                    color: _editPrimary,
+                    fontWeight: FontWeight.w400,
+                    height: 1.55,
+                    color: _editItemText,
                   ),
                   decoration: InputDecoration(
                     hintText: 'gratitude_hint'.tr(),
