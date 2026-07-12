@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
+import 'package:share_plus/share_plus.dart';
 import '../models/gratitude.dart';
 import '../bloc/gratitude_bloc.dart';
 import '../bloc/gratitude_event.dart';
@@ -267,11 +267,15 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => _handleDuplicate(),
-            child: const SizedBox(
+            onTap: items.isEmpty ? null : () => _handleShare(),
+            child: SizedBox(
               width: 44,
               height: 44,
-              child: Icon(Icons.content_copy, color: _editPrimary, size: 18),
+              child: Icon(
+                Icons.ios_share,
+                color: items.isEmpty ? _editPrimary.withValues(alpha: 0.3) : _editPrimary,
+                size: 18,
+              ),
             ),
           ),
           GestureDetector(
@@ -397,16 +401,43 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
     if (mounted) Navigator.pop(context);
   }
 
-  void _handleDuplicate() {
+  void _handleShare() {
     final items = _getItems();
     if (items.isEmpty) return;
 
-    final text = items.join('\n');
-    Clipboard.setData(ClipboardData(text: text));
+    final title = _toBoldUnicode('share_gratitude_title'.tr());
+    final bulletedItems = items.map((item) => '• $item').join('\n');
+    final text = '$title\n$bulletedItems';
 
-    if (mounted) {
-      AppToast.success(context, 'copied_to_clipboard'.tr());
+    final box = context.findRenderObject() as RenderBox?;
+    Share.share(
+      text,
+      sharePositionOrigin: box != null ? box.localToGlobal(Offset.zero) & box.size : null,
+    );
+  }
+
+  /// Maps ASCII letters/digits to Unicode "Mathematical Bold" code points so
+  /// the title renders bold in plain-text share targets (Notes, Messages,
+  /// etc.), which don't support rich-text formatting. Non-Latin characters
+  /// (e.g. Cyrillic) pass through unchanged since that Unicode block has no
+  /// bold variants for them.
+  String _toBoldUnicode(String input) {
+    const upperOffset = 0x1D400 - 0x41;
+    const lowerOffset = 0x1D41A - 0x61;
+    const digitOffset = 0x1D7CE - 0x30;
+    final buffer = StringBuffer();
+    for (final rune in input.runes) {
+      if (rune >= 0x41 && rune <= 0x5A) {
+        buffer.writeCharCode(rune + upperOffset);
+      } else if (rune >= 0x61 && rune <= 0x7A) {
+        buffer.writeCharCode(rune + lowerOffset);
+      } else if (rune >= 0x30 && rune <= 0x39) {
+        buffer.writeCharCode(rune + digitOffset);
+      } else {
+        buffer.writeCharCode(rune);
+      }
     }
+    return buffer.toString();
   }
 
   void _handleClear() {
