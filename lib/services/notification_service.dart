@@ -92,11 +92,14 @@ class NotificationService {
 
     final saveButtonTitle = await _localizedSaveButtonTitle();
 
-    // iOS initialization settings with text input category
+    // iOS initialization settings with text input category.
+    // Permission flags are false here so the system prompt doesn't appear
+    // at app startup — it's requested explicitly via requestPermissions()
+    // once the user finishes onboarding instead.
     final iosSettings = DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
       notificationCategories: [
         DarwinNotificationCategory(
           'gratitude_input',
@@ -154,14 +157,13 @@ class NotificationService {
       debugPrint('App was NOT launched by notification (normal app start)');
     }
 
-    // Request permissions
-    debugPrint('Requesting notification permissions...');
-    await _requestPermissions();
-    debugPrint('✓ Permissions requested');
     debugPrint('========== NOTIFICATION SERVICE READY ==========\n');
   }
 
-  Future<void> _requestPermissions() async {
+  /// Shows the system notification permission prompt. Called once the user
+  /// finishes onboarding, rather than at app startup, so it doesn't appear
+  /// before they've seen what the app does.
+  Future<void> requestPermissions() async {
     if (Platform.isIOS) {
       await _notifications
           .resolvePlatformSpecificImplementation<

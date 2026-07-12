@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import '../services/settings_service.dart';
+import '../services/notification_service.dart';
 import '../core/di/injection.dart';
 import 'home_screen.dart';
 
@@ -93,6 +94,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Future<void> _finish() async {
     final settingsService = getIt<SettingsService>();
     await settingsService.setHasCompletedOnboarding(true);
+    await getIt<NotificationService>().requestPermissions();
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(builder: (_) => const HomeScreen()),
@@ -507,24 +509,7 @@ class _OneLinePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      gradient: _obAccentGradient,
-                      shape: BoxShape.circle,
-                      boxShadow: const [
-                        BoxShadow(color: Color(0x57B2446A), blurRadius: 12, offset: Offset(0, 5)),
-                      ],
-                    ),
-                    child: const Icon(Icons.check, size: 17, color: Colors.white),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 22),
+              const SizedBox(height: 12),
               Text(
                 'what_are_you_grateful_for'.tr(),
                 style: const TextStyle(
@@ -654,7 +639,7 @@ class _NotificationPage extends StatelessWidget {
                         const SizedBox(height: 3),
                         Text('onboarding_notification_subtitle'.tr(),
                             style: const TextStyle(
-                                fontSize: 14, fontWeight: FontWeight.w500, color: Color(0xFF6C6166), height: 1.35)),
+                                fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFF6C6166), height: 1.35)),
                       ],
                     ),
                   ),
@@ -758,8 +743,19 @@ final _settingsSubSectionDecoration = BoxDecoration(
 class _RemindersPage extends StatelessWidget {
   const _RemindersPage();
 
+  // Matches settings_screen.dart's _formatTime, so the onboarding example
+  // reads identically to the real settings screen.
+  static String _formatTime(int hour, int minute) {
+    final period = hour >= 12 ? 'PM' : 'AM';
+    final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
+    final displayMinute = minute.toString().padLeft(2, '0');
+    return '$displayHour:$displayMinute $period';
+  }
+
   @override
   Widget build(BuildContext context) {
+    final settingsService = getIt<SettingsService>();
+    final timeLabel = _formatTime(settingsService.dailyReminderHour, settingsService.dailyReminderMinute);
     return _PageScaffold(
       imagePath: 'assets/onboarding/onboarding_4.png',
       title: 'onboarding_title_4'.tr(),
@@ -782,7 +778,7 @@ class _RemindersPage extends StatelessWidget {
                 icon: Icons.calendar_today_outlined,
                 title: 'daily_reminder_title'.tr(),
                 description: 'daily_reminder_description'.tr(),
-                expandedContent: _SettingsTimeSection(timeLabel: 'onboarding_example_reminder_time'.tr()),
+                expandedContent: _SettingsTimeSection(timeLabel: timeLabel),
               ),
             ],
           ),

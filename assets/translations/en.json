@@ -84,6 +84,5 @@
     "onboarding_notification_title": "Time for Gratitude",
     "onboarding_notification_subtitle": "Take a moment to reflect on what you're grateful for today.",
     "onboarding_example_reply": "A beautiful sunset today",
-    "onboarding_send": "Send",
-    "onboarding_example_reminder_time": "5:00 PM"
+    "onboarding_send": "Send"
 }
