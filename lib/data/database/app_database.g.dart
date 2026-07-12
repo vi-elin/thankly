@@ -185,6 +185,14 @@ class _$GratitudeDao extends GratitudeDao {
   }
 
   @override
+  Future<GratitudeEntity?> findRandomGratitudeSince(int sinceTimestamp) async {
+    return _queryAdapter.query(
+        'SELECT * FROM GratitudeEntity WHERE timestamp >= ?1 ORDER BY RANDOM() LIMIT 1',
+        mapper: (Map<String, Object?> row) => GratitudeEntity(id: row['id'] as int?, timestamp: row['timestamp'] as int, itemsJson: row['itemsJson'] as String),
+        arguments: [sinceTimestamp]);
+  }
+
+  @override
   Future<void> deleteGratitudeById(int id) async {
     await _queryAdapter.queryNoReturn(
         'DELETE FROM GratitudeEntity WHERE id = ?1',

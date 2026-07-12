@@ -42,6 +42,7 @@
     "select_time": "Select Time",
     "done_button": "Done",
     "what_are_you_grateful_for": "What are you grateful for?",
+    "your_gratitudes": "Your Gratitudes",
     "edit_your_gratitude": "Edit your gratitude",
     "gratitude_hint": "Each line will be a new gratitude...\n\nFor example:\nMy family\nA warm cup of coffee\nA beautiful sunset",
     "preview": "Preview:",
@@ -68,7 +69,7 @@
     "onboarding_title_3": "Long press to reply",
     "onboarding_subtitle_3": "Write down a grateful moment without opening the app",
     "onboarding_title_4": "Build a lasting habit",
-    "onboarding_subtitle_4": "Gentle reminders help you stay consistent without interrupting your day",
+    "onboarding_subtitle_4": "Reminders help you stay consistent without interrupting your day",
     "onboarding_example_gratitudes_count": "62 Gratitudes",
     "onboarding_example_grateful_days": "28 Grateful Days",
     "onboarding_example_item_1": "My sister called",
@@ -84,6 +85,6 @@
     "onboarding_notification_time_now": "now",
     "onboarding_notification_title": "Time for Gratitude",
     "onboarding_notification_subtitle": "Take a moment to reflect on what you're grateful for today.",
-    "onboarding_example_reply": "A beautiful sunset today",
+    "onboarding_example_reply": "Tasty coffee",
     "onboarding_send": "Send"
 }

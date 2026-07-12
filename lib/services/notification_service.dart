@@ -426,15 +426,20 @@ class NotificationService {
 
   // Schedule notification with random gratitude
   Future<void> scheduleRandomGratitudeReminder({
-    int hour = 12, // Noon by default
+    int hour = 17, // 5pm by default
     int minute = 0,
     int regularityHours =
-        24, // How often to repeat (in hours), 0 = every minute (test mode)
+        168, // How often to repeat (in hours), 0 = every minute (test mode)
   }) async {
     try {
-      // Get a random gratitude from database
+      // Prefer a random gratitude from the last 7 days; fall back to any-time
+      // random if the user hasn't written anything that recently, so the
+      // reminder still has something to show.
       final dao = getIt<GratitudeDao>();
-      final randomGratitude = await dao.findRandomGratitude();
+      final sevenDaysAgo =
+          DateTime.now().subtract(const Duration(days: 7)).millisecondsSinceEpoch;
+      final randomGratitude = await dao.findRandomGratitudeSince(sevenDaysAgo) ??
+          await dao.findRandomGratitude();
 
       if (randomGratitude == null) {
         // No gratitudes yet, skip

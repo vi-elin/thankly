@@ -29,7 +29,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
+  static const int _pageSize = 30;
+
   StreamSubscription? _subscription;
+  final ScrollController _scrollController = ScrollController();
+  int _visibleCount = _pageSize;
 
   @override
   void initState() {
@@ -38,6 +42,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     _subscription = getIt<NotificationService>().onGratitudeSaved.listen((_) {
       if (mounted) context.read<GratitudeBloc>().add(const LoadGratitudes());
     });
+    _scrollController.addListener(_onScroll);
     FirebaseService().logScreenView(screenName: 'home_screen', screenClass: 'HomeScreen');
   }
 
@@ -45,7 +50,35 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _subscription?.cancel();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 200) {
+      _loadMore();
+    }
+  }
+
+  void _loadMore() {
+    final state = context.read<GratitudeBloc>().state;
+    if (state is GratitudeLoaded && _visibleCount < state.gratitudes.length) {
+      setState(() {
+        _visibleCount = (_visibleCount + _pageSize).clamp(0, state.gratitudes.length);
+      });
+    }
+  }
+
+  // Groups the given (already newest-first) gratitude records by day, for
+  // rendering only the currently paginated-in subset with day headers.
+  Map<DateTime, List<Gratitude>> _groupByDate(List<Gratitude> gratitudes) {
+    final Map<DateTime, List<Gratitude>> grouped = {};
+    for (final gratitude in gratitudes) {
+      grouped.putIfAbsent(gratitude.dateOnly, () => []).add(gratitude);
+    }
+    return grouped;
   }
 
   @override
@@ -61,6 +94,12 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _homeBg,
+      // Home has no text input, so it never needs to resize for the
+      // keyboard. Without this, the FAB (which is positioned relative to
+      // the Scaffold's content bottom) visibly jumps down as the previous
+      // screen's keyboard-closing animation transiently changes
+      // MediaQuery.viewInsets.bottom while navigating back here.
+      resizeToAvoidBottomInset: false,
       body: BlocBuilder<GratitudeBloc, GratitudeState>(
         builder: (context, state) {
           if (state is GratitudeLoading) {
@@ -89,13 +128,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
           if (state is GratitudeLoaded) {
             final isEmpty = state.groupedGratitudes.isEmpty;
+            final visibleCount = _visibleCount.clamp(0, state.gratitudes.length);
+            final visibleGratitudes = state.gratitudes.take(visibleCount).toList();
+            final visibleGrouped = _groupByDate(visibleGratitudes);
+            final hasMore = visibleCount < state.gratitudes.length;
             return SafeArea(
               bottom: false,
               child: Column(
                 children: [
                   _buildHeader(isEmpty: isEmpty, groupedGratitudes: state.groupedGratitudes),
                   Expanded(
-                    child: isEmpty ? _buildEmptyState() : _buildList(context, state),
+                    child: isEmpty ? _buildEmptyState() : _buildList(context, visibleGrouped, hasMore),
                   ),
                 ],
               ),
@@ -227,10 +270,11 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
-  Widget _buildList(BuildContext context, GratitudeLoaded state) {
-    final sortedDates = state.groupedGratitudes.keys.toList()..sort((a, b) => b.compareTo(a));
+  Widget _buildList(BuildContext context, Map<DateTime, List<Gratitude>> groupedGratitudes, bool hasMore) {
+    final sortedDates = groupedGratitudes.keys.toList()..sort((a, b) => b.compareTo(a));
 
     return ListView(
+      controller: _scrollController,
       padding: const EdgeInsets.fromLTRB(18, 8, 18, 120),
       children: [
         for (final date in sortedDates) ...[
@@ -246,7 +290,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
             ),
           ),
-          for (final gratitude in state.groupedGratitudes[date]!)
+          for (final gratitude in groupedGratitudes[date]!)
             Dismissible(
               key: Key(gratitude.id.toString()),
               direction: DismissDirection.endToStart,
@@ -283,6 +327,17 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
               ),
             ),
         ],
+        if (hasMore)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 24),
+            child: Center(
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFE85A8C)),
+              ),
+            ),
+          ),
       ],
     );
   }

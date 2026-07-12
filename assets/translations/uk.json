@@ -43,6 +43,7 @@
     "select_time": "Виберіть час",
     "done_button": "Готово",
     "what_are_you_grateful_for": "За що ви вдячні?",
+    "your_gratitudes": "Ваші вдячності",
     "edit_your_gratitude": "Редагувати вдячність",
     "gratitude_hint": "Кожен рядок буде новою вдячністю...\n\nНаприклад:\nМоя сім'я\nЧашка теплої кави\nГарний захід сонця",
     "preview": "Попередній перегляд:",
@@ -69,7 +70,7 @@
     "onboarding_title_3": "Затисніть, щоб відповісти",
     "onboarding_subtitle_3": "Запишіть момент вдячності, не відкриваючи додаток",
     "onboarding_title_4": "Сформуйте стійку звичку",
-    "onboarding_subtitle_4": "Делікатні нагадування допоможуть залишатися послідовними, не заважаючи вашому дню",
+    "onboarding_subtitle_4": "Нагадування допоможуть залишатися послідовними, не заважаючи вашому дню",
     "onboarding_example_gratitudes_count": "62 вдячності",
     "onboarding_example_grateful_days": "28 вдячних днів",
     "onboarding_example_item_1": "Подзвонила сестра",
@@ -85,6 +86,6 @@
     "onboarding_notification_time_now": "щойно",
     "onboarding_notification_title": "Час для вдячності",
     "onboarding_notification_subtitle": "Зупиніться на мить і згадайте, за що ви вдячні сьогодні.",
-    "onboarding_example_reply": "Гарний захід сонця сьогодні",
+    "onboarding_example_reply": "Смачна кава",
     "onboarding_send": "Надіслати"
 }

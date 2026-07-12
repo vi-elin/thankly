@@ -11,10 +11,6 @@ import 'services/settings_service.dart';
 import 'services/firebase_service.dart';
 import 'widgets/app_version_checker.dart';
 
-// TESTING ONLY: forces the onboarding flow to show on every app launch,
-// regardless of SettingsService.hasCompletedOnboarding. Set to false before shipping.
-const bool kAlwaysShowOnboardingForTesting = true;
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -50,15 +46,17 @@ void main() async {
     );
   }
 
-  // Smart language detection
-  // If device is Ukrainian or Russian -> set Ukrainian
-  // Otherwise -> set English
+  // Default language: Ukrainian if the device's system language or region
+  // is Ukraine, otherwise English. Only applies on first launch — once the
+  // user picks a language in Settings, easy_localization persists that
+  // choice (its own saved locale takes priority over this default on every
+  // later launch, until changed again).
   Locale startLocale = const Locale('en');
-  final platformDispatcher = WidgetsBinding.instance.platformDispatcher;
-  final deviceLocale = platformDispatcher.locale;
-  final languageCode = deviceLocale.languageCode;
+  final deviceLocale = WidgetsBinding.instance.platformDispatcher.locale;
+  final isUkrainianDevice =
+      deviceLocale.languageCode == 'uk' || deviceLocale.countryCode?.toUpperCase() == 'UA';
 
-  if (languageCode == 'uk' || languageCode == 'ru') {
+  if (isUkrainianDevice) {
     startLocale = const Locale('uk');
   }
 
@@ -121,10 +119,9 @@ class _MyAppState extends State<MyApp> {
           scaffoldBackgroundColor: Colors.grey[50],
         ),
         home: AppVersionChecker(
-          child: kAlwaysShowOnboardingForTesting ||
-                  !getIt<SettingsService>().hasCompletedOnboarding
-              ? const OnboardingScreen()
-              : const HomeScreen(),
+          child: getIt<SettingsService>().hasCompletedOnboarding
+              ? const HomeScreen()
+              : const OnboardingScreen(),
         ),
       ),
     );

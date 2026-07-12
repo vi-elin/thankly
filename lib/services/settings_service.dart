@@ -56,7 +56,7 @@ class SettingsService {
   }
 
   int get gratitudeReminderHour =>
-      _prefs.getInt(_keyGratitudeReminderHour) ?? 12;
+      _prefs.getInt(_keyGratitudeReminderHour) ?? 17;
 
   Future<void> setGratitudeReminderHour(int hour) async {
     await _prefs.setInt(_keyGratitudeReminderHour, hour);
@@ -69,9 +69,9 @@ class SettingsService {
     await _prefs.setInt(_keyGratitudeReminderMinute, minute);
   }
 
-  /// Regularity in hours (e.g., 1, 2, 4, 8, 12, 24)
+  /// Regularity in hours (24 = Daily, 72 = Every 3 Days, 168 = Weekly, 720 = Monthly)
   int get gratitudeReminderRegularity =>
-      _prefs.getInt(_keyGratitudeReminderRegularity) ?? 24;
+      _prefs.getInt(_keyGratitudeReminderRegularity) ?? 168;
 
   Future<void> setGratitudeReminderRegularity(int hours) async {
     await _prefs.setInt(_keyGratitudeReminderRegularity, hours);

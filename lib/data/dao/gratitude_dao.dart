@@ -12,6 +12,9 @@ abstract class GratitudeDao {
   @Query('SELECT * FROM GratitudeEntity ORDER BY RANDOM() LIMIT 1')
   Future<GratitudeEntity?> findRandomGratitude();
 
+  @Query('SELECT * FROM GratitudeEntity WHERE timestamp >= :sinceTimestamp ORDER BY RANDOM() LIMIT 1')
+  Future<GratitudeEntity?> findRandomGratitudeSince(int sinceTimestamp);
+
   @insert
   Future<int> insertGratitude(GratitudeEntity gratitude);
 

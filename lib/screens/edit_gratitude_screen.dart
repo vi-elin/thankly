@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:share_plus/share_plus.dart';
@@ -60,6 +61,7 @@ class EditGratitudeScreen extends StatefulWidget {
 
 class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
   late _BulletTextEditingController _controller;
+  final FocusNode _focusNode = FocusNode();
   bool _isProcessingChange = false;
   String _previousText = '';
 
@@ -70,6 +72,10 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
     final initialText = items.isEmpty ? '' : items.map((item) => '• $item').join('\n');
     _previousText = initialText;
     _controller = _BulletTextEditingController(text: initialText);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_isEditingDisabled && mounted) FocusScope.of(context).requestFocus(_focusNode);
+    });
   }
 
   bool get _hasChanges {
@@ -124,7 +130,12 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
       final oldCursorPosition = cursorPosition + deletedCount;
       if (oldCursorPosition <= _previousText.length) {
         final deletedText = _previousText.substring(cursorPosition, oldCursorPosition);
-        if (deletedText == '•' && cursorPosition > 0 && _previousText[cursorPosition - 1] == '\n') {
+        if (deletedText == '•' && cursorPosition == 0 && _itemsFromText(_previousText).isEmpty) {
+          // Keep the leading placeholder bullet while there's no real
+          // gratitude content yet, so the field can't end up bullet-less.
+          newText = _previousText;
+          newCursorPosition = 1;
+        } else if (deletedText == '•' && cursorPosition > 0 && _previousText[cursorPosition - 1] == '\n') {
           final beforeBullet = _previousText.substring(0, cursorPosition - 1);
           final afterBullet = _previousText.substring(oldCursorPosition + 1);
           newText = beforeBullet + afterBullet;
@@ -153,6 +164,7 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -165,67 +177,76 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
            today.day != createdDate.day;
   }
 
+
   @override
   Widget build(BuildContext context) {
     final items = _getItems();
 
-    return Scaffold(
-      backgroundColor: _editBg,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _buildTopBar(items),
-            // Heading
-            Padding(
-              padding: const EdgeInsets.fromLTRB(22, 18, 22, 0),
-              child: Text(
-                'what_are_you_grateful_for'.tr(),
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: _editHeading,
-                  letterSpacing: -0.33,
-                  height: 1.12,
-                ),
-                textAlign: TextAlign.left,
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Text field
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(26, 0, 26, 40),
-                child: TextField(
-                  controller: _controller,
-                  autofocus: true,
-                  maxLines: null,
-                  expands: true,
-                  textAlignVertical: TextAlignVertical.top,
-                  onChanged: _handleTextChanged,
-                  cursorColor: _editBulletColor,
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) FocusScope.of(context).unfocus();
+      },
+      child: Scaffold(
+        backgroundColor: _editBg,
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _buildTopBar(items),
+              // Heading
+              Padding(
+                padding: const EdgeInsets.fromLTRB(22, 18, 22, 0),
+                child: Text(
+                  _isEditingDisabled ? 'your_gratitudes'.tr() : 'what_are_you_grateful_for'.tr(),
                   style: const TextStyle(
-                    fontSize: 18.5,
-                    fontWeight: FontWeight.w400,
-                    height: 1.55,
-                    color: _editItemText,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: _editHeading,
+                    letterSpacing: -0.33,
+                    height: 1.12,
                   ),
-                  decoration: InputDecoration(
-                    hintText: 'gratitude_hint'.tr(),
-                    hintStyle: const TextStyle(
-                      color: Color(0xFFB09AA3),
-                      fontSize: 17,
-                      fontWeight: FontWeight.w500,
-                      height: 1.6,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.zero,
-                  ),
-                  enabled: !_isEditingDisabled,
+                  textAlign: TextAlign.left,
                 ),
               ),
-            ),
-          ],
+              const SizedBox(height: 16),
+              // Text field
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(26, 0, 26, 40),
+                  child: GestureDetector(
+                    onLongPress: _isEditingDisabled ? _handleCopy : null,
+                    child: TextField(
+                      controller: _controller,
+                      focusNode: _focusNode,
+                      maxLines: null,
+                      expands: true,
+                      textAlignVertical: TextAlignVertical.top,
+                      onChanged: _handleTextChanged,
+                      cursorColor: _editBulletColor,
+                      style: const TextStyle(
+                        fontSize: 18.5,
+                        fontWeight: FontWeight.w400,
+                        height: 1.55,
+                        color: _editItemText,
+                      ),
+                      decoration: InputDecoration(
+                        hintText: 'gratitude_hint'.tr(),
+                        hintStyle: const TextStyle(
+                          color: Color(0xFFB09AA3),
+                          fontSize: 17,
+                          fontWeight: FontWeight.w500,
+                          height: 1.6,
+                        ),
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                      enabled: !_isEditingDisabled,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -242,7 +263,7 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
             children: [
               _buildActionButtons(items),
               const SizedBox(width: 12),
-              if (_hasChanges) _buildSaveButton(),
+              if (_hasChanges && !_isEditingDisabled) _buildSaveButton(),
             ],
           ),
         ],
@@ -332,8 +353,10 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
     );
   }
 
-  List<String> _getItems() {
-    return _controller.text
+  List<String> _getItems() => _itemsFromText(_controller.text);
+
+  List<String> _itemsFromText(String text) {
+    return text
         .split('\n')
         .map((line) => line.trim())
         .where((line) => line.isNotEmpty)
@@ -365,6 +388,7 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
             CustomDialogAction(
               label: 'discard_button'.tr(),
               onPressed: () {
+                FocusScope.of(context).unfocus();
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
@@ -374,6 +398,7 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
         ),
       );
     } else {
+      FocusScope.of(context).unfocus();
       Navigator.pop(context);
     }
   }
@@ -398,7 +423,21 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
     } else {
       bloc.add(UpdateGratitude(gratitude));
     }
-    if (mounted) Navigator.pop(context);
+    if (!mounted) return;
+    FocusScope.of(context).unfocus();
+    Navigator.pop(context);
+  }
+
+  void _handleCopy() {
+    final items = _getItems();
+    if (items.isEmpty) return;
+
+    final text = items.join('\n');
+    Clipboard.setData(ClipboardData(text: text));
+
+    if (mounted) {
+      AppToast.success(context, 'copied_to_clipboard'.tr());
+    }
   }
 
   void _handleShare() {
@@ -455,6 +494,7 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
           CustomDialogAction(
             label: 'delete_button'.tr(),
             onPressed: () {
+              FocusScope.of(context).unfocus();
               Navigator.pop(context);
               if (widget.gratitude?.id != null) {
                 context.read<GratitudeBloc>().add(DeleteGratitude(widget.gratitude!.id!));
