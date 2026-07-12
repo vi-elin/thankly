@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -233,6 +234,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
           ),
+
+          if (kDebugMode) ...[
+            _sectionHeader('DEBUG'),
+            GestureDetector(
+              onTap: () async {
+                await _notificationService.testDailyReminder(
+                  delay: const Duration(seconds: 3),
+                );
+                if (mounted) {
+                  AppToast.info(context, 'Test notification scheduled in 3s');
+                }
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                decoration: _cardDecoration,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 46,
+                      height: 46,
+                      decoration: BoxDecoration(
+                        color: const Color(0xD9E4E4E8),
+                        borderRadius: BorderRadius.circular(15),
+                        border: Border.all(color: const Color(0x80FFFFFF)),
+                      ),
+                      child: const Icon(Icons.bug_report_outlined, color: _neutralIcon, size: 22),
+                    ),
+                    const SizedBox(width: 14),
+                    const Expanded(
+                      child: Text('Send test notification (3s)',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: _primary)),
+                    ),
+                    const Icon(Icons.chevron_right, color: _chevron, size: 22),
+                  ],
+                ),
+              ),
+            ),
+          ],
 
           _sectionHeader('legal_header'.tr()),
 

@@ -1,6 +1,8 @@
 import UIKit
 import Flutter
 import UserNotifications
+// Required for FlutterLocalNotificationsPlugin.setPluginRegistrantCallback.
+import flutter_local_notifications
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
@@ -9,12 +11,20 @@ import UserNotifications
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
-    
+
+    // Required so notification actions without the .foreground option (e.g. our
+    // "Save" quick-reply) can run our Dart background callback via a separate
+    // Flutter engine when the app isn't already running, instead of silently
+    // failing to save.
+    FlutterLocalNotificationsPlugin.setPluginRegistrantCallback { (registry) in
+      GeneratedPluginRegistrant.register(with: registry)
+    }
+
     // Set up notification delegate
     if #available(iOS 10.0, *) {
       UNUserNotificationCenter.current().delegate = self
     }
-    
+
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
   

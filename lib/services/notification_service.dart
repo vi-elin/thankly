@@ -56,6 +56,17 @@ class NotificationService {
   // the same notification on every foreground resume.
   bool _hasCheckedLaunchDetailsFallback = false;
 
+  // Window used by the DB-backed duplicate guard in saveQuickGratitude().
+  static const _duplicateSaveWindowMs = 60000;
+
+  bool _listEquals(List<String> a, List<String> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
   // Reads the localized "Save" label for the iOS quick-reply button.
   //
   // This runs before EasyLocalization's widget tree is mounted (notification
@@ -109,7 +120,9 @@ class NotificationService {
               'Quick Add',
               buttonTitle: saveButtonTitle,
               placeholder: 'What are you grateful for?',
-              options: {DarwinNotificationActionOption.foreground},
+              // No .foreground option: saving from the notification's text
+              // field should happen in the background, without opening the app.
+              options: <DarwinNotificationActionOption>{},
             ),
           ],
         ),
@@ -322,6 +335,28 @@ class NotificationService {
           text.split('\n').where((line) => line.trim().isNotEmpty).toList();
       debugPrint('>>> Parsed items: $items');
 
+      // Duplicate guard: the same notification tap can be picked up by more
+      // than one path (the plugin's background callback, the native iOS
+      // UserDefaults fallback, and the app-launch check), including across
+      // separate app opens. Notification responses carry no durable unique
+      // ID, so treat an identical entry saved moments ago as the same tap
+      // rather than a new one. Checking the DB (not an in-memory flag) means
+      // this still catches duplicates even if the two saves happen in
+      // different app processes.
+      final recentGratitudes = await dao.findAllGratitudes();
+      if (recentGratitudes.isNotEmpty) {
+        final mostRecent = recentGratitudes.first;
+        final now = DateTime.now().millisecondsSinceEpoch;
+        final isSameItems = _listEquals(mostRecent.items, items);
+        final isWithinDedupeWindow =
+            (now - mostRecent.timestamp).abs() < _duplicateSaveWindowMs;
+        if (isSameItems && isWithinDedupeWindow) {
+          debugPrint(
+              '>>> Duplicate of most recent entry detected (saved ${now - mostRecent.timestamp}ms ago), skipping');
+          return;
+        }
+      }
+
       final entity = GratitudeEntity.fromItems(
         timestamp: DateTime.now().millisecondsSinceEpoch,
         items: items,
@@ -359,12 +394,13 @@ class NotificationService {
           channelDescription: 'Daily reminder to add gratitude',
           importance: Importance.high,
           priority: Priority.high,
-          // Android inline reply action
+          // Android inline reply action. showsUserInterface is false so
+          // replying saves the gratitude in the background without opening the app.
           actions: <AndroidNotificationAction>[
             AndroidNotificationAction(
               'quick_add',
               'Quick Add',
-              showsUserInterface: true,
+              showsUserInterface: false,
               inputs: <AndroidNotificationActionInput>[
                 AndroidNotificationActionInput(
                   label: 'What are you grateful for?',
@@ -592,10 +628,10 @@ class NotificationService {
   // ============= TEST METHODS =============
   // These methods trigger notifications immediately for testing
 
-  /// Test the daily reminder notification (triggers in 5 seconds)
-  Future<void> testDailyReminder() async {
+  /// Test the daily reminder notification (triggers after [delay], default 5 seconds)
+  Future<void> testDailyReminder({Duration delay = const Duration(seconds: 5)}) async {
     final now = tz.TZDateTime.now(tz.local);
-    final testTime = now.add(const Duration(seconds: 5));
+    final testTime = now.add(delay);
 
     await _notifications.zonedSchedule(
       999, // Test notification ID
@@ -614,7 +650,7 @@ class NotificationService {
             AndroidNotificationAction(
               'quick_add',
               'Quick Add',
-              showsUserInterface: true,
+              showsUserInterface: false,
               inputs: <AndroidNotificationActionInput>[
                 AndroidNotificationActionInput(
                   label: 'What are you grateful for?',
@@ -637,7 +673,7 @@ class NotificationService {
       payload: 'test_daily_reminder', // Add payload for tracking
     );
 
-    debugPrint('Test notification scheduled for 5 seconds from now');
+    debugPrint('Test notification scheduled for ${delay.inSeconds} seconds from now');
   }
 
   /// Test the random gratitude notification (triggers in 5 seconds)
