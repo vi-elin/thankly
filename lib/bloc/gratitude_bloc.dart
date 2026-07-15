@@ -1,7 +1,9 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../core/di/injection.dart';
 import '../data/dao/gratitude_dao.dart';
 import '../models/gratitude.dart';
 import '../services/firebase_service.dart';
+import '../services/notification_service.dart';
 import 'gratitude_event.dart';
 import 'gratitude_state.dart';
 
@@ -44,6 +46,8 @@ class GratitudeBloc extends Bloc<GratitudeEvent, GratitudeState> {
     try {
       final entity = event.gratitude.toEntity();
       await gratitudeDao.insertGratitude(entity);
+
+      await getIt<NotificationService>().skipTodaysDailyReminderIfPending();
 
       await _firebaseService.logEvent(
         name: 'gratitude_created',

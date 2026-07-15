@@ -133,16 +133,21 @@ class _EditGratitudeScreenState extends State<EditGratitudeScreen> {
         if (deletedText == '•' && cursorPosition == 0 && _itemsFromText(_previousText).isEmpty) {
           // Keep the leading placeholder bullet while there's no real
           // gratitude content yet, so the field can't end up bullet-less.
+          // Cursor goes after the full "• " prefix (not between the dot and
+          // the space), otherwise typing next would insert inside the
+          // prefix (e.g. "•a ") and break the bullet-coloring match.
           newText = _previousText;
-          newCursorPosition = 1;
+          newCursorPosition = 2;
         } else if (deletedText == '•' && cursorPosition > 0 && _previousText[cursorPosition - 1] == '\n') {
           final beforeBullet = _previousText.substring(0, cursorPosition - 1);
           final afterBullet = _previousText.substring(oldCursorPosition + 1);
           newText = beforeBullet + afterBullet;
           newCursorPosition = beforeBullet.length;
         } else if (deletedText == ' ' && cursorPosition > 0 && _previousText[cursorPosition - 1] == '•') {
+          // Same reasoning: keep the cursor after the restored space, not
+          // between the bullet dot and the space.
           newText = _previousText;
-          newCursorPosition = cursorPosition;
+          newCursorPosition = cursorPosition + 1;
         }
       }
     }

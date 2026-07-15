@@ -1,4 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/widgets.dart';
@@ -10,6 +11,7 @@ import 'dart:io' show Platform;
 import '../data/dao/gratitude_dao.dart';
 import '../data/entities/gratitude_entity.dart';
 import '../core/di/injection.dart';
+import 'settings_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 @pragma('vm:entry-point')
@@ -92,10 +94,18 @@ class NotificationService {
   Future<void> initialize() async {
     debugPrint('\n========== NOTIFICATION SERVICE INITIALIZATION ==========');
 
-    // Initialize timezone
+    // Initialize timezone. tz.local defaults to UTC until a location is set
+    // explicitly, so without this every zonedSchedule call below would fire
+    // at the wrong wall-clock time for anyone outside UTC.
     debugPrint('Initializing timezones...');
     tz.initializeTimeZones();
-    debugPrint('✓ Timezones initialized');
+    try {
+      final deviceTimeZone = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(deviceTimeZone.identifier));
+      debugPrint('✓ Timezones initialized, local: ${deviceTimeZone.identifier}');
+    } catch (e) {
+      debugPrint('Error detecting device timezone, defaulting to UTC: $e');
+    }
 
     // Android initialization settings
     const androidSettings =
@@ -368,6 +378,8 @@ class NotificationService {
       await dao.insertGratitude(entity);
       debugPrint('>>> ✓ Gratitude saved to database successfully!');
 
+      await skipTodaysDailyReminderIfPending();
+
       debugPrint('>>> Notifying listeners via stream...');
       _gratitudeSavedController.add(null);
       debugPrint('>>> ✓ Stream notification sent');
@@ -375,6 +387,39 @@ class NotificationService {
       debugPrint('>>> ✗ ERROR saving quick gratitude: $e');
       debugPrint('>>> Stack trace: $stackTrace');
     }
+  }
+
+  NotificationDetails _dailyReminderNotificationDetails() {
+    return const NotificationDetails(
+      android: AndroidNotificationDetails(
+        'daily_reminder',
+        'Daily Reminder',
+        channelDescription: 'Daily reminder to add gratitude',
+        importance: Importance.high,
+        priority: Priority.high,
+        // Android inline reply action. showsUserInterface is false so
+        // replying saves the gratitude in the background without opening the app.
+        actions: <AndroidNotificationAction>[
+          AndroidNotificationAction(
+            'quick_add',
+            'Quick Add',
+            showsUserInterface: false,
+            inputs: <AndroidNotificationActionInput>[
+              AndroidNotificationActionInput(
+                label: 'What are you grateful for?',
+              ),
+            ],
+          ),
+        ],
+      ),
+      iOS: DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        // iOS text input category
+        categoryIdentifier: 'gratitude_input',
+      ),
+    );
   }
 
   // Schedule daily reminder to add gratitude
@@ -387,41 +432,53 @@ class NotificationService {
       'Time for Gratitude',
       'Take a moment to reflect on what you\'re grateful for today',
       _nextInstanceOfTime(hour, minute),
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'daily_reminder',
-          'Daily Reminder',
-          channelDescription: 'Daily reminder to add gratitude',
-          importance: Importance.high,
-          priority: Priority.high,
-          // Android inline reply action. showsUserInterface is false so
-          // replying saves the gratitude in the background without opening the app.
-          actions: <AndroidNotificationAction>[
-            AndroidNotificationAction(
-              'quick_add',
-              'Quick Add',
-              showsUserInterface: false,
-              inputs: <AndroidNotificationActionInput>[
-                AndroidNotificationActionInput(
-                  label: 'What are you grateful for?',
-                ),
-              ],
-            ),
-          ],
-        ),
-        iOS: DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-          // iOS text input category
-          categoryIdentifier: 'gratitude_input',
-        ),
-      ),
+      _dailyReminderNotificationDetails(),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
     );
+  }
+
+  // If today's daily reminder hasn't fired yet, push it to tomorrow instead.
+  // Called after a gratitude is saved so someone who already wrote today
+  // doesn't get pestered by the reminder later the same day. Rescheduling
+  // (rather than just cancelling) keeps matchDateTimeComponents.time in
+  // effect, so the daily recurrence keeps firing on its own afterwards even
+  // if the app is never reopened.
+  Future<void> skipTodaysDailyReminderIfPending() async {
+    try {
+      final settings = getIt<SettingsService>();
+      if (!settings.isDailyReminderEnabled) return;
+
+      final now = tz.TZDateTime.now(tz.local);
+      final todaysReminderTime = tz.TZDateTime(
+        tz.local,
+        now.year,
+        now.month,
+        now.day,
+        settings.dailyReminderHour,
+        settings.dailyReminderMinute,
+      );
+
+      // Already fired (or not due today) — nothing to skip.
+      if (!now.isBefore(todaysReminderTime)) return;
+
+      await _notifications.cancel(0);
+      await _notifications.zonedSchedule(
+        0,
+        'Time for Gratitude',
+        'Take a moment to reflect on what you\'re grateful for today',
+        todaysReminderTime.add(const Duration(days: 1)),
+        _dailyReminderNotificationDetails(),
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        matchDateTimeComponents: DateTimeComponents.time,
+      );
+    } catch (e) {
+      debugPrint('Error skipping today\'s daily reminder: $e');
+    }
   }
 
   // Schedule notification with random gratitude
@@ -432,6 +489,16 @@ class NotificationService {
         168, // How often to repeat (in hours), 0 = every minute (test mode)
   }) async {
     try {
+      // Clear out every notification ID this method could have previously
+      // used (single recurring slot, custom-interval batch, test-mode batch)
+      // before scheduling anything new. Without this, switching frequency
+      // (e.g. Every 3 Days -> Weekly) can leave stale entries behind that
+      // keep firing alongside the new schedule, violating "sends once per
+      // selected frequency".
+      for (int id = 1; id <= 159; id++) {
+        await _notifications.cancel(id);
+      }
+
       // Prefer a random gratitude from the last 7 days; fall back to any-time
       // random if the user hasn't written anything that recently, so the
       // reminder still has something to show.
@@ -507,12 +574,23 @@ class NotificationService {
         debugPrint('Scheduling MONTHLY gratitude reminder');
       }
 
+      // Anchor the cadence to the install date (the "first sent" reference
+      // point), so the recurring day-of-week/day-of-month stays stable
+      // across reschedules instead of drifting to whatever day the user
+      // happened to last touch a setting on.
+      final anchorDate = getIt<SettingsService>().installDate;
+
       if (matchComponent != null) {
         await _notifications.zonedSchedule(
           1, // ID 1 for recurring
           'Remember this? 💭',
           '• $gratitudeText',
-          _nextInstanceOfTime(hour, minute),
+          _nextAnchoredInstance(
+            anchorDate: anchorDate,
+            hour: hour,
+            minute: minute,
+            intervalHours: regularityHours,
+          ),
           const NotificationDetails(
             android: AndroidNotificationDetails(
               'gratitude_reminder',
@@ -535,20 +613,14 @@ class NotificationService {
         );
       } else {
         // Custom Intervals (e.g., Every 3 days) or fallback
-        // Schedule individual notifications
-        final now = tz.TZDateTime.now(tz.local);
-        var startTime = tz.TZDateTime(
-          tz.local,
-          now.year,
-          now.month,
-          now.day,
-          hour,
-          minute,
+        // Schedule individual notifications, on the same install-date-anchored
+        // grid used above, so the 3-day cycle's phase is stable too.
+        final startTime = _nextAnchoredInstance(
+          anchorDate: anchorDate,
+          hour: hour,
+          minute: minute,
+          intervalHours: regularityHours,
         );
-
-        if (startTime.isBefore(now)) {
-          startTime = startTime.add(const Duration(days: 1));
-        }
 
         // For "Every 3 days" (72h), schedule for next 30 days
         // For others, schedule for next 7 days
@@ -618,6 +690,32 @@ class NotificationService {
     }
 
     return scheduledDate;
+  }
+
+  // Finds the next future occurrence on the grid {anchorDate's date + hour:minute,
+  // then + N * intervalHours}, so the recurring cadence (which day of the
+  // week/month it lands on) stays anchored to a stable reference point
+  // (e.g. install date) instead of drifting with each reschedule.
+  tz.TZDateTime _nextAnchoredInstance({
+    required DateTime anchorDate,
+    required int hour,
+    required int minute,
+    required int intervalHours,
+  }) {
+    final now = tz.TZDateTime.now(tz.local);
+    var occurrence = tz.TZDateTime(
+      tz.local,
+      anchorDate.year,
+      anchorDate.month,
+      anchorDate.day,
+      hour,
+      minute,
+    );
+    final interval = Duration(hours: intervalHours);
+    while (occurrence.isBefore(now)) {
+      occurrence = occurrence.add(interval);
+    }
+    return occurrence;
   }
 
   // Cancel all notifications
