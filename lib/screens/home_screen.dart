@@ -15,6 +15,7 @@ import '../services/firebase_service.dart';
 import '../models/gratitude.dart';
 import '../widgets/custom_dialog.dart';
 import '../widgets/app_toast.dart';
+import '../widgets/rate_us_dialog.dart';
 
 const _homePrimary = Color(0xFF211A1C);
 const _homeSecondary = Color(0xFF8A8086);
@@ -100,7 +101,16 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
       // screen's keyboard-closing animation transiently changes
       // MediaQuery.viewInsets.bottom while navigating back here.
       resizeToAvoidBottomInset: false,
-      body: BlocBuilder<GratitudeBloc, GratitudeState>(
+      body: BlocConsumer<GratitudeBloc, GratitudeState>(
+        listener: (context, state) {
+          if (state is GratitudeLoaded) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                RateUsDialog.maybeShow(context, totalSavedCount: state.gratitudes.length);
+              }
+            });
+          }
+        },
         builder: (context, state) {
           if (state is GratitudeLoading) {
             return const Center(child: CircularProgressIndicator(color: Color(0xFFE85A8C)));

@@ -88,5 +88,13 @@
     "onboarding_notification_title": "Time for Gratitude",
     "onboarding_notification_subtitle": "Take a moment to reflect on what you're grateful for today.",
     "onboarding_example_reply": "Tasty coffee",
-    "onboarding_send": "Send"
+    "onboarding_send": "Send",
+    "rate_us_title": "Enjoying Thankly?",
+    "rate_us_subtitle": "Your opinion matters to us",
+    "rate_us_reason_hint": "What could we improve?",
+    "rate_us_send_feedback": "Send Feedback",
+    "rate_us_not_now": "Not Now",
+    "rate_us_store_prompt": "Glad you're enjoying Thankly! Would you mind leaving a review on the App Store?",
+    "rate_us_rate_on_store": "Rate on the App Store",
+    "rate_us_maybe_later": "Maybe Later"
 }

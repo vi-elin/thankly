@@ -15,6 +15,7 @@ class SettingsService {
 
   static const String _keyHasCompletedOnboarding = 'has_completed_onboarding';
   static const String _keyInstallDateMillis = 'install_date_millis';
+  static const String _keyHasShownRateUsPrompt = 'has_shown_rate_us_prompt';
 
   final SharedPreferences _prefs;
 
@@ -88,5 +89,13 @@ class SettingsService {
 
   Future<void> setGratitudeReminderRegularity(int hours) async {
     await _prefs.setInt(_keyGratitudeReminderRegularity, hours);
+  }
+
+  // Rate Us prompt — shown at most once, after the 7th saved gratitude
+  bool get hasShownRateUsPrompt =>
+      _prefs.getBool(_keyHasShownRateUsPrompt) ?? false;
+
+  Future<void> setHasShownRateUsPrompt(bool shown) async {
+    await _prefs.setBool(_keyHasShownRateUsPrompt, shown);
   }
 }
