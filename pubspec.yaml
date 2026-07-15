@@ -74,6 +74,7 @@ dependencies:
   # Package info for version checking
   package_info_plus: ^5.0.1
   flutter_timezone: ^5.1.0
+  device_info_plus: ^9.1.2
 
 dev_dependencies:
   flutter_test:

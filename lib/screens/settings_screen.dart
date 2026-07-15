@@ -1,7 +1,10 @@
+import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kDebugMode;
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:device_info_plus/device_info_plus.dart';
 import '../services/settings_service.dart';
 import '../services/notification_service.dart';
 import '../services/firebase_service.dart';
@@ -26,6 +29,7 @@ const _chevron       = Color(0xFF807579);
 // ignore: unused_element
 const _subBg         = Color(0xFFF3F3F5);
 const _pageBg        = Color(0xFFF2F2F4);
+const _versionLabelColor = Color(0xFFAAA0A4);
 
 // Glassmorphism card: frosted gradient with white border and soft pink shadow
 final _cardDecoration = BoxDecoration(
@@ -64,11 +68,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   late int _gratitudeReminderMinute;
   late int _gratitudeReminderRegularity;
 
+  PackageInfo? _packageInfo;
+
   @override
   void initState() {
     super.initState();
     _settingsService = getIt<SettingsService>();
     _notificationService = getIt<NotificationService>();
+    _loadPackageInfo();
 
     _dailyReminderEnabled = _settingsService.isDailyReminderEnabled;
     _dailyReminderHour = _settingsService.dailyReminderHour;
@@ -295,6 +302,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
 
+          _sectionHeader('support_header'.tr()),
+
+          // Support card
+          Container(
+            decoration: _cardDecoration,
+            child: _buildLegalRow(
+              icon: Icons.mail_outline,
+              label: 'contact_support'.tr(),
+              onTap: _contactSupport,
+            ),
+          ),
+
           const SizedBox(height: 30),
 
           // Version footer
@@ -304,8 +323,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const Text('Thankly',
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _primary, letterSpacing: 0.15)),
                 const SizedBox(height: 3),
-                Text('${'version'.tr()} 1.0.0 (1)',
-                    style: const TextStyle(fontSize: 12.5, color: Color(0xFFAAA0A4))),
+                Text('${'version'.tr()} ${_appVersionText()}',
+                    style: const TextStyle(fontSize: 12.5, color: _versionLabelColor)),
               ],
             ),
           ),
@@ -716,6 +735,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _launchURL(String url) async {
     final uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      if (mounted) {
+        AppToast.error(context, 'could_not_open_link'.tr());
+      }
+    }
+  }
+
+  Future<void> _loadPackageInfo() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) setState(() => _packageInfo = info);
+  }
+
+  String _appVersionText() {
+    final info = _packageInfo;
+    if (info == null) return '';
+    return '${info.version} (${info.buildNumber})';
+  }
+
+  Future<void> _contactSupport() async {
+    final info = _packageInfo ?? await PackageInfo.fromPlatform();
+    final appVersion = '${info.version} (${info.buildNumber})';
+
+    String osLabel = 'OS version';
+    String osVersion = 'Unknown';
+    String deviceModel = 'Unknown';
+    try {
+      final deviceInfo = DeviceInfoPlugin();
+      if (Platform.isIOS) {
+        final iosInfo = await deviceInfo.iosInfo;
+        osLabel = 'iOS version';
+        osVersion = iosInfo.systemVersion;
+        deviceModel = iosInfo.utsname.machine;
+      } else if (Platform.isAndroid) {
+        final androidInfo = await deviceInfo.androidInfo;
+        osLabel = 'Android version';
+        osVersion = androidInfo.version.release;
+        deviceModel = androidInfo.model;
+      }
+    } catch (e) {
+      debugPrint('Error reading device info: $e');
+    }
+
+    final body = 'App version: $appVersion\n'
+        '$osLabel: $osVersion\n'
+        'Device model: $deviceModel\n'
+        '\n---\nPlease describe your issue below:\n';
+
+    final emailUri = Uri(
+      scheme: 'mailto',
+      path: 'vielindevelopment@gmail.com',
+      query: 'subject=${Uri.encodeComponent('Thankly Support')}&body=${Uri.encodeComponent(body)}',
+    );
+
+    if (!await launchUrl(emailUri)) {
       if (mounted) {
         AppToast.error(context, 'could_not_open_link'.tr());
       }
