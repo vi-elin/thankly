@@ -1,6 +1,6 @@
 {
-    "app_title": "Thankly",
-    "home_title": "Thankly",
+    "app_title": "Thanklio",
+    "home_title": "Thanklio",
     "gratitudes_count_zero": "Немає записів",
     "gratitudes_count_one": "1 запис",
     "gratitudes_count_few": "{} записи",
@@ -90,12 +90,12 @@
     "onboarding_notification_subtitle": "Зупиніться на мить і згадайте, за що ви вдячні сьогодні.",
     "onboarding_example_reply": "Смачна кава",
     "onboarding_send": "Надіслати",
-    "rate_us_title": "Подобається Thankly?",
+    "rate_us_title": "Подобається Thanklio?",
     "rate_us_subtitle": "Нам важлива ваша думка",
     "rate_us_reason_hint": "Що можна покращити?",
     "rate_us_send_feedback": "Надіслати відгук",
     "rate_us_not_now": "Не зараз",
-    "rate_us_store_prompt": "Раді, що вам подобається Thankly! Не проти залишити відгук в App Store?",
+    "rate_us_store_prompt": "Раді, що вам подобається Thanklio! Не проти залишити відгук в App Store?",
     "rate_us_rate_on_store": "Оцінити в App Store",
     "rate_us_maybe_later": "Можливо пізніше"
 }

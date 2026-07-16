@@ -320,7 +320,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Center(
             child: Column(
               children: [
-                const Text('Thankly',
+                const Text('Thanklio',
                     style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: _primary, letterSpacing: 0.15)),
                 const SizedBox(height: 3),
                 Text('${'version'.tr()} ${_appVersionText()}',
@@ -784,7 +784,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final emailUri = Uri(
       scheme: 'mailto',
       path: 'vielindevelopment@gmail.com',
-      query: 'subject=${Uri.encodeComponent('Thankly Support')}&body=${Uri.encodeComponent(body)}',
+      query: 'subject=${Uri.encodeComponent('Thanklio Support')}&body=${Uri.encodeComponent(body)}',
     );
 
     if (!await launchUrl(emailUri)) {

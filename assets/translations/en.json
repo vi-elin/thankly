@@ -1,6 +1,6 @@
 {
-    "app_title": "Thankly",
-    "home_title": "Thankly",
+    "app_title": "Thanklio",
+    "home_title": "Thanklio",
     "gratitudes_count_zero": "No gratitudes",
     "gratitudes_count_one": "1 gratitude",
     "gratitudes_count_other": "{} gratitudes",
@@ -89,12 +89,12 @@
     "onboarding_notification_subtitle": "Take a moment to reflect on what you're grateful for today.",
     "onboarding_example_reply": "Tasty coffee",
     "onboarding_send": "Send",
-    "rate_us_title": "Enjoying Thankly?",
+    "rate_us_title": "Enjoying Thanklio?",
     "rate_us_subtitle": "Your opinion matters to us",
     "rate_us_reason_hint": "What could we improve?",
     "rate_us_send_feedback": "Send Feedback",
     "rate_us_not_now": "Not Now",
-    "rate_us_store_prompt": "Glad you're enjoying Thankly! Would you mind leaving a review on the App Store?",
+    "rate_us_store_prompt": "Glad you're enjoying Thanklio! Would you mind leaving a review on the App Store?",
     "rate_us_rate_on_store": "Rate on the App Store",
     "rate_us_maybe_later": "Maybe Later"
 }

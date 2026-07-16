@@ -101,7 +101,7 @@ class _MyAppState extends State<MyApp> {
       create: (_) => getIt<GratitudeBloc>()..add(const LoadGratitudes()),
       child: MaterialApp(
         navigatorKey: MyApp.navigatorKey,
-        title: 'Thankly',
+        title: 'Thanklio',
         debugShowCheckedModeBanner: false,
 
         // Easy Localization configuration

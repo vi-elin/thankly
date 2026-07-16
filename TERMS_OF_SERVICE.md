@@ -1,18 +1,18 @@
-# Terms of Service for Thankly
+# Terms of Service for Thanklio
 
 **Last Updated: July 15, 2026**
 
-Welcome to Thankly. These Terms of Service ("Terms") govern your use of the Thankly mobile application ("App," "Service," or "Application"). By downloading, installing, or using the App, you agree to be bound by these Terms.
+Welcome to Thanklio. These Terms of Service ("Terms") govern your use of the Thanklio mobile application ("App," "Service," or "Application"). By downloading, installing, or using the App, you agree to be bound by these Terms.
 
 This is the canonical text; the version published at https://vi-elin.github.io/thankly/terms-of-service.html (linked from the App's Settings screen) must be kept in sync with this file.
 
 ## 1. Acceptance of Terms
 
-By accessing or using Thankly, you acknowledge that you have read, understood, and agree to be bound by these Terms and our [Privacy Policy](PRIVACY_POLICY.md). If you do not agree to these Terms, please do not use the App.
+By accessing or using Thanklio, you acknowledge that you have read, understood, and agree to be bound by these Terms and our [Privacy Policy](PRIVACY_POLICY.md). If you do not agree to these Terms, please do not use the App.
 
 ## 2. Description of Service
 
-Thankly is a gratitude journaling application that allows users to:
+Thanklio is a gratitude journaling application that allows users to:
 - Create and store daily gratitude entries
 - View and edit past gratitude entries
 - Receive reminder notifications to practice gratitude
@@ -27,7 +27,7 @@ You must be at least 13 years old to use the App. If you are between 13 and 18 y
 
 ## 4. User Responsibilities
 
-When using Thankly, you agree to:
+When using Thanklio, you agree to:
 - Use the App for its intended purpose of personal gratitude journaling
 - Not attempt to reverse engineer, decompile, or disassemble the App
 - Not use the App for any illegal or unauthorized purpose
@@ -36,7 +36,7 @@ When using Thankly, you agree to:
 
 ## 5. Intellectual Property Rights
 
-- **App Ownership**: Thankly, including its design, features, and code, is owned by us and protected by copyright, trademark, and other intellectual property laws.
+- **App Ownership**: Thanklio, including its design, features, and code, is owned by us and protected by copyright, trademark, and other intellectual property laws.
 - **Your Content**: You retain all rights to the gratitude entries and content you create within the App. Since all data is stored locally on your device, you have complete control over your content.
 - **License**: We grant you a limited, non-exclusive, non-transferable, revocable license to use the App for personal, non-commercial purposes.
 
@@ -49,7 +49,7 @@ Your privacy is important to us. The text of your gratitude entries is stored ex
 > **Important**: Please read this section carefully as it limits our liability.
 
 - **As-Is Service**: The App is provided "as is" and "as available" without warranties of any kind, either express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, or non-infringement.
-- **No Medical Advice**: Thankly is a journaling tool and is not intended to provide medical, psychological, or therapeutic advice. It should not be used as a substitute for professional mental health services.
+- **No Medical Advice**: Thanklio is a journaling tool and is not intended to provide medical, psychological, or therapeutic advice. It should not be used as a substitute for professional mental health services.
 - **Data Loss**: While we strive to provide a reliable service, we are not responsible for any loss of data that may occur due to device failure, software bugs, or other technical issues. We strongly recommend backing up your device regularly.
 - **Limitation of Liability**: To the maximum extent permitted by law, we shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible losses resulting from your use of the App.
 
@@ -100,4 +100,4 @@ We will respond to your inquiry within 48 hours.
 
 ---
 
-Thank you for using Thankly. We hope it brings more gratitude into your life! 💜
+Thank you for using Thanklio. We hope it brings more gratitude into your life! 💜

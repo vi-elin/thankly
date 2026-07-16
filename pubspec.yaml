@@ -1,5 +1,5 @@
 name: gratitude_app
-description: "Thankly - A beautiful and simple gratitude journaling app to help you cultivate daily thankfulness and mindfulness."
+description: "Thanklio - A beautiful and simple gratitude journaling app to help you cultivate daily thankfulness and mindfulness."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev

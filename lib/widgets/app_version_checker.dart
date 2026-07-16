@@ -150,7 +150,7 @@ class _AppVersionCheckerState extends State<AppVersionChecker> {
     final url = Theme.of(context).platform == TargetPlatform.iOS
         ? Uri.parse('https://apps.apple.com/app/your-app-id')
         : Uri.parse(
-            'https://play.google.com/store/apps/details?id=com.thankly.vielin');
+            'https://play.google.com/store/apps/details?id=com.mobileapp.thanklio');
 
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);

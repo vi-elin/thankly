@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Thankly</string>
+	<string>Thanklio</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -27,7 +27,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSUserNotificationsUsageDescription</key>
-	<string>Thankly uses notifications to remind you to write your daily gratitude entries and to share your saved gratitudes with you. You can customize or disable notifications in the app settings.</string>
+	<string>Thanklio uses notifications to remind you to write your daily gratitude entries and to share your saved gratitudes with you. You can customize or disable notifications in the app settings.</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UIBackgroundModes</key>

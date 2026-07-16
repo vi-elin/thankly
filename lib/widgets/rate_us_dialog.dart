@@ -21,7 +21,7 @@ const _supportEmail = 'vielindevelopment@gmail.com';
 // App Store Connect URL, e.g. "6443888723"). Play Store uses the package
 // name directly, so it needs no placeholder.
 const _appStoreId = 'REPLACE_WITH_APP_STORE_ID';
-const _androidPackageName = 'com.thankly.vielin';
+const _androidPackageName = 'com.mobileapp.thanklio';
 
 /// One-time "rate us" prompt: 5-star picker that branches based on rating.
 /// 1-3 stars asks for a reason and emails it to support; 4-5 stars asks the
@@ -323,7 +323,7 @@ class _RateUsDialogState extends State<RateUsDialog> {
     final emailUri = Uri(
       scheme: 'mailto',
       path: _supportEmail,
-      query: 'subject=${Uri.encodeComponent('Thankly Feedback ($_rating★)')}'
+      query: 'subject=${Uri.encodeComponent('Thanklio Feedback ($_rating★)')}'
           '&body=${Uri.encodeComponent(body)}',
     );
 

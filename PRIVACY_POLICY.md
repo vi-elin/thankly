@@ -1,14 +1,14 @@
-# Privacy Policy for Thankly
+# Privacy Policy for Thanklio
 
 **Last Updated: July 15, 2026**
 
-Welcome to Thankly ("we," "our," or "us"). We are committed to protecting your privacy and ensuring you have a positive experience while using our gratitude journaling application. Thankly is developed by an individual developer based in Poland.
+Welcome to Thanklio ("we," "our," or "us"). We are committed to protecting your privacy and ensuring you have a positive experience while using our gratitude journaling application. Thanklio is developed by an individual developer based in Poland.
 
 This is the canonical text; the version published at https://vi-elin.github.io/thankly/privacy-policy.html (linked from the App's Settings screen) must be kept in sync with this file.
 
 ## 1. Information We Collect
 
-Thankly is designed with privacy as a core principle. Your journal content never leaves your device. We collect and store the following information:
+Thanklio is designed with privacy as a core principle. Your journal content never leaves your device. We collect and store the following information:
 
 - **Gratitude Entries**: The text content of your daily gratitude entries that you create within the app. This is stored locally only and is never sent to us or anyone else.
 - **Timestamps**: The date and time when you create or modify gratitude entries (stored locally only)
@@ -57,7 +57,7 @@ If you are in the European Economic Area, you also have rights under the GDPR re
 
 ## 6. Children's Privacy
 
-Thankly is not directed at children under 13, and we do not knowingly collect personal information from children under 13. The analytics and crash reporting described in Section 4 apply to all users regardless of age, so we recommend children under 13 use the app only under parental supervision. If we learn that we have inadvertently collected information from a child under 13, we will take steps to delete it.
+Thanklio is not directed at children under 13, and we do not knowingly collect personal information from children under 13. The analytics and crash reporting described in Section 4 apply to all users regardless of age, so we recommend children under 13 use the app only under parental supervision. If we learn that we have inadvertently collected information from a child under 13, we will take steps to delete it.
 
 ## 7. Notifications
 
