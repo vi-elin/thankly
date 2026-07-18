@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../core/store_links.dart';
 import '../services/firebase_service.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'custom_dialog.dart';
 import 'custom_dialog.dart';
 
 /// Widget that checks for app updates and maintenance mode on app start
@@ -146,11 +146,10 @@ class _AppVersionCheckerState extends State<AppVersionChecker> {
   }
 
   Future<void> _openAppStore() async {
-    // TODO: Replace with your actual App Store and Play Store URLs
     final url = Theme.of(context).platform == TargetPlatform.iOS
-        ? Uri.parse('https://apps.apple.com/app/your-app-id')
+        ? Uri.parse('https://apps.apple.com/app/id$appStoreId')
         : Uri.parse(
-            'https://play.google.com/store/apps/details?id=com.mobileapp.thanklio');
+            'https://play.google.com/store/apps/details?id=$androidPackageName');
 
     if (await canLaunchUrl(url)) {
       await launchUrl(url, mode: LaunchMode.externalApplication);

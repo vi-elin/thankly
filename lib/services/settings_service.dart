@@ -85,7 +85,7 @@ class SettingsService {
 
   /// Regularity in hours (24 = Daily, 72 = Every 3 Days, 168 = Weekly, 720 = Monthly)
   int get gratitudeReminderRegularity =>
-      _prefs.getInt(_keyGratitudeReminderRegularity) ?? 168;
+      _prefs.getInt(_keyGratitudeReminderRegularity) ?? 72;
 
   Future<void> setGratitudeReminderRegularity(int hours) async {
     await _prefs.setInt(_keyGratitudeReminderRegularity, hours);

@@ -692,10 +692,13 @@ class NotificationService {
     return scheduledDate;
   }
 
-  // Finds the next future occurrence on the grid {anchorDate's date + hour:minute,
-  // then + N * intervalHours}, so the recurring cadence (which day of the
+  // Finds the next future occurrence on the grid {anchorDate's date + hour:minute
+  // + N * intervalHours, N >= 1}, so the recurring cadence (which day of the
   // week/month it lands on) stays anchored to a stable reference point
-  // (e.g. install date) instead of drifting with each reschedule.
+  // (e.g. install date) instead of drifting with each reschedule. Starting
+  // at N=1 (rather than N=0) guarantees the first notification never fires
+  // sooner than a full interval after the anchor — e.g. a weekly reminder
+  // anchored to today's install must not fire later today.
   tz.TZDateTime _nextAnchoredInstance({
     required DateTime anchorDate,
     required int hour,
@@ -703,6 +706,7 @@ class NotificationService {
     required int intervalHours,
   }) {
     final now = tz.TZDateTime.now(tz.local);
+    final interval = Duration(hours: intervalHours);
     var occurrence = tz.TZDateTime(
       tz.local,
       anchorDate.year,
@@ -710,8 +714,7 @@ class NotificationService {
       anchorDate.day,
       hour,
       minute,
-    );
-    final interval = Duration(hours: intervalHours);
+    ).add(interval);
     while (occurrence.isBefore(now)) {
       occurrence = occurrence.add(interval);
     }

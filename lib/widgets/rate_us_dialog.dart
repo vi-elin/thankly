@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../core/di/injection.dart';
+import '../core/store_links.dart';
 import '../services/settings_service.dart';
 import '../services/firebase_service.dart';
 import 'app_toast.dart';
@@ -17,11 +18,6 @@ const _secondaryText = Color(0xFF4A4044);
 // Support inbox that receives low-rating feedback under the hood.
 const _supportEmail = 'vielindevelopment@gmail.com';
 
-// Set once the app has an App Store Connect record (numeric id from its
-// App Store Connect URL, e.g. "6443888723"). Play Store uses the package
-// name directly, so it needs no placeholder.
-const _appStoreId = 'REPLACE_WITH_APP_STORE_ID';
-const _androidPackageName = 'com.mobileapp.thanklio';
 
 /// One-time "rate us" prompt: 5-star picker that branches based on rating.
 /// 1-3 stars asks for a reason and emails it to support; 4-5 stars asks the
@@ -344,8 +340,8 @@ class _RateUsDialogState extends State<RateUsDialog> {
     );
 
     final url = Platform.isIOS
-        ? 'https://apps.apple.com/app/id$_appStoreId?action=write-review'
-        : 'https://play.google.com/store/apps/details?id=$_androidPackageName';
+        ? 'https://apps.apple.com/app/id$appStoreId?action=write-review'
+        : 'https://play.google.com/store/apps/details?id=$androidPackageName';
 
     final navigator = Navigator.of(context);
     final launched = await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
