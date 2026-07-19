@@ -9,6 +9,7 @@ import '../services/settings_service.dart';
 import '../services/notification_service.dart';
 import '../services/firebase_service.dart';
 import '../core/di/injection.dart';
+import '../core/time_format.dart';
 import '../widgets/app_toast.dart';
 
 const _accent        = Color(0xFFE85A8C);
@@ -568,7 +569,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    _formatTime(hour, minute),
+                    formatTimeOfDay(context, hour, minute),
                     style: const TextStyle(fontSize: 19, fontWeight: FontWeight.w700, color: _primary),
                   ),
                   const Icon(Icons.chevron_right, color: _chevron, size: 22),
@@ -679,7 +680,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              _formatTime(h, 0),
+                              formatTimeOfDay(context, h, 0),
                               style: TextStyle(
                                 fontSize: 17,
                                 fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
@@ -700,13 +701,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
         );
       },
     );
-  }
-
-  String _formatTime(int hour, int minute) {
-    final period = hour >= 12 ? 'PM' : 'AM';
-    final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
-    final displayMinute = minute.toString().padLeft(2, '0');
-    return '$displayHour:$displayMinute $period';
   }
 
   Future<void> _updateNotifications() async {

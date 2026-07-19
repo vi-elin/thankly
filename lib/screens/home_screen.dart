@@ -93,6 +93,14 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    // Registers this screen as a dependent of the active locale. Home sits
+    // underneath Settings in the Navigator stack, and its .tr() calls (e.g.
+    // the empty state) read a static translation table that updates
+    // instantly on setLocale — but without a locale dependency here, this
+    // screen itself never gets marked dirty, so that text stays stale until
+    // some unrelated rebuild (bloc reload, app resume) happens to occur.
+    context.locale;
+
     return Scaffold(
       backgroundColor: _homeBg,
       // Home has no text input, so it never needs to resize for the

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/time_format.dart';
 import '../models/gratitude.dart';
 
 const _cardTextPrimary = Color(0xFF352D31);
@@ -17,12 +18,9 @@ class GratitudeCard extends StatelessWidget {
     required this.onTap,
   });
 
-  String _formatTime() {
+  String _formatTime(BuildContext context) {
     final dt = DateTime.fromMillisecondsSinceEpoch(gratitude.timestamp);
-    final h = dt.hour % 12 == 0 ? 12 : dt.hour % 12;
-    final m = dt.minute.toString().padLeft(2, '0');
-    final period = dt.hour >= 12 ? 'PM' : 'AM';
-    return '$h:$m $period';
+    return formatTimeOfDay(context, dt.hour, dt.minute);
   }
 
   @override
@@ -94,7 +92,7 @@ class GratitudeCard extends StatelessWidget {
                 else
                   const SizedBox.shrink(),
                 Text(
-                  _formatTime(),
+                  _formatTime(context),
                   style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,

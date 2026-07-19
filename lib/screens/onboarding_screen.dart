@@ -3,6 +3,7 @@ import 'package:easy_localization/easy_localization.dart';
 import '../services/settings_service.dart';
 import '../services/notification_service.dart';
 import '../core/di/injection.dart';
+import '../core/time_format.dart';
 import 'home_screen.dart';
 
 const _obPrimary = Color(0xFF211A1C);
@@ -743,19 +744,11 @@ final _settingsSubSectionDecoration = BoxDecoration(
 class _RemindersPage extends StatelessWidget {
   const _RemindersPage();
 
-  // Matches settings_screen.dart's _formatTime, so the onboarding example
-  // reads identically to the real settings screen.
-  static String _formatTime(int hour, int minute) {
-    final period = hour >= 12 ? 'PM' : 'AM';
-    final displayHour = hour > 12 ? hour - 12 : (hour == 0 ? 12 : hour);
-    final displayMinute = minute.toString().padLeft(2, '0');
-    return '$displayHour:$displayMinute $period';
-  }
-
   @override
   Widget build(BuildContext context) {
     final settingsService = getIt<SettingsService>();
-    final timeLabel = _formatTime(settingsService.dailyReminderHour, settingsService.dailyReminderMinute);
+    final timeLabel = formatTimeOfDay(
+        context, settingsService.dailyReminderHour, settingsService.dailyReminderMinute);
     return _PageScaffold(
       imagePath: 'assets/onboarding/onboarding_4.png',
       title: 'onboarding_title_4'.tr(),
