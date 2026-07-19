@@ -24,7 +24,13 @@ class GratitudeBloc extends Bloc<GratitudeEvent, GratitudeState> {
     Emitter<GratitudeState> emit,
   ) async {
     try {
-      emit(const GratitudeLoading());
+      // Only show the full-screen spinner on the very first load. Reloads
+      // (triggered by add/update/delete, a notification-saved gratitude, or
+      // app resume) would otherwise flash the already-visible list to a
+      // spinner and back on every refresh.
+      if (state is! GratitudeLoaded) {
+        emit(const GratitudeLoading());
+      }
 
       final entities = await gratitudeDao.findAllGratitudes();
       final gratitudes = entities.map((e) => Gratitude.fromEntity(e)).toList();
