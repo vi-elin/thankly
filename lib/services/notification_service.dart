@@ -1,6 +1,5 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter/widgets.dart';
 import 'dart:async';
@@ -209,19 +208,6 @@ class NotificationService {
               AndroidFlutterLocalNotificationsPlugin>();
       await androidImplementation?.requestNotificationsPermission();
     }
-  }
-
-  Future<void> _onNotificationTapped(NotificationResponse response) async {
-    debugPrint('=== FOREGROUND HANDLER CALLED ===');
-
-    // Ensure dependencies are initialized (safety check)
-    if (!getIt.isRegistered<GratitudeDao>()) {
-      debugPrint('WARNING: Dependencies not registered, initializing...');
-      WidgetsFlutterBinding.ensureInitialized();
-      await setupDependencyInjection();
-    }
-
-    await handleNotificationResponse(response);
   }
 
   /// Check for and handle pending notification responses

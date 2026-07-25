@@ -17,7 +17,6 @@ import '../widgets/custom_dialog.dart';
 import '../widgets/app_toast.dart';
 import '../widgets/rate_us_dialog.dart';
 
-const _homePrimary = Color(0xFF211A1C);
 const _homeSecondary = Color(0xFF8A8086);
 const _homeSectionLabel = Color(0xFF7A7177);
 const _homeBg = Color(0xFFF2F2F4);
@@ -424,15 +423,6 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   void _deleteGratitude(BuildContext context, Gratitude gratitude) {
     context.read<GratitudeBloc>().add(DeleteGratitude(gratitude.id!));
     AppToast.success(context, 'gratitude_deleted'.tr());
-  }
-
-  void _confirmAndDelete(BuildContext context, Gratitude gratitude) async {
-    final bloc = context.read<GratitudeBloc>();
-    final confirmed = await _showDeleteConfirmation(context);
-    if (confirmed == true && mounted) {
-      bloc.add(DeleteGratitude(gratitude.id!));
-      AppToast.success(context, 'gratitude_deleted'.tr());
-    }
   }
 
   Future<void> _navigateToEdit(BuildContext context, Gratitude? gratitude) async {
