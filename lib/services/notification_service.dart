@@ -69,25 +69,26 @@ class NotificationService {
     return true;
   }
 
-  // Reads the localized "Save" label for the iOS quick-reply button.
+  // Loads the translations matching the user's selected language, for use in
+  // notification text.
   //
-  // This runs before EasyLocalization's widget tree is mounted (notification
-  // categories must be registered during initialize(), which happens ahead
-  // of runApp), so 'save_button'.tr() isn't reliable here. Instead we read
-  // the saved locale directly from SharedPreferences (the key EasyLocalization
-  // persists it under) and load the matching translation file ourselves.
-  Future<String> _localizedSaveButtonTitle() async {
-    const fallback = 'Save';
+  // Notifications are often produced before EasyLocalization's widget tree is
+  // mounted (categories must be registered during initialize(), which
+  // happens ahead of runApp; scheduling can also run from a background
+  // isolate handling a notification tap), so 'key'.tr() isn't reliable here.
+  // Instead we read the saved locale directly from SharedPreferences (the
+  // key EasyLocalization persists it under) and load the matching
+  // translation file ourselves.
+  Future<Map<String, dynamic>> _loadTranslations() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final localeCode = prefs.getString('locale') ?? 'en';
       final json =
           await rootBundle.loadString('assets/translations/$localeCode.json');
-      final translations = jsonDecode(json) as Map<String, dynamic>;
-      return translations['save_button'] as String? ?? fallback;
+      return jsonDecode(json) as Map<String, dynamic>;
     } catch (e) {
-      debugPrint('Error loading localized save button title: $e');
-      return fallback;
+      debugPrint('Error loading translations: $e');
+      return {};
     }
   }
 
@@ -111,7 +112,13 @@ class NotificationService {
     const androidSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
 
-    final saveButtonTitle = await _localizedSaveButtonTitle();
+    final translations = await _loadTranslations();
+    final saveButtonTitle = translations['save_button'] as String? ?? 'Save';
+    final quickAddTitle =
+        translations['quick_add_action_title'] as String? ?? 'Quick Add';
+    final gratefulForPlaceholder =
+        translations['what_are_you_grateful_for'] as String? ??
+            'What are you grateful for?';
 
     // iOS initialization settings with text input category.
     // Permission flags are false here so the system prompt doesn't appear
@@ -127,9 +134,9 @@ class NotificationService {
           actions: <DarwinNotificationAction>[
             DarwinNotificationAction.text(
               'quick_add',
-              'Quick Add',
+              quickAddTitle,
               buttonTitle: saveButtonTitle,
-              placeholder: 'What are you grateful for?',
+              placeholder: gratefulForPlaceholder,
               // No .foreground option: saving from the notification's text
               // field should happen in the background, without opening the app.
               options: <DarwinNotificationActionOption>{},
@@ -389,8 +396,11 @@ class NotificationService {
     }
   }
 
-  NotificationDetails _dailyReminderNotificationDetails() {
-    return const NotificationDetails(
+  NotificationDetails _dailyReminderNotificationDetails({
+    required String quickAddTitle,
+    required String gratefulForLabel,
+  }) {
+    return NotificationDetails(
       android: AndroidNotificationDetails(
         'daily_reminder',
         'Daily Reminder',
@@ -402,17 +412,17 @@ class NotificationService {
         actions: <AndroidNotificationAction>[
           AndroidNotificationAction(
             'quick_add',
-            'Quick Add',
+            quickAddTitle,
             showsUserInterface: false,
             inputs: <AndroidNotificationActionInput>[
               AndroidNotificationActionInput(
-                label: 'What are you grateful for?',
+                label: gratefulForLabel,
               ),
             ],
           ),
         ],
       ),
-      iOS: DarwinNotificationDetails(
+      iOS: const DarwinNotificationDetails(
         presentAlert: true,
         presentBadge: true,
         presentSound: true,
@@ -427,12 +437,28 @@ class NotificationService {
     int hour = 20, // 8 PM by default
     int minute = 0,
   }) async {
+    final translations = await _loadTranslations();
+    final title =
+        translations['onboarding_notification_title'] as String? ??
+            'Time for Gratitude';
+    final body =
+        translations['onboarding_notification_subtitle'] as String? ??
+            'Take a moment to reflect on what you\'re grateful for today';
+    final quickAddTitle =
+        translations['quick_add_action_title'] as String? ?? 'Quick Add';
+    final gratefulForLabel =
+        translations['what_are_you_grateful_for'] as String? ??
+            'What are you grateful for?';
+
     await _notifications.zonedSchedule(
       0, // Notification ID
-      'Time for Gratitude',
-      'Take a moment to reflect on what you\'re grateful for today',
+      title,
+      body,
       _nextInstanceOfTime(hour, minute),
-      _dailyReminderNotificationDetails(),
+      _dailyReminderNotificationDetails(
+        quickAddTitle: quickAddTitle,
+        gratefulForLabel: gratefulForLabel,
+      ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
           UILocalNotificationDateInterpretation.absoluteTime,
@@ -464,13 +490,29 @@ class NotificationService {
       // Already fired (or not due today) — nothing to skip.
       if (!now.isBefore(todaysReminderTime)) return;
 
+      final translations = await _loadTranslations();
+      final title =
+          translations['onboarding_notification_title'] as String? ??
+              'Time for Gratitude';
+      final body =
+          translations['onboarding_notification_subtitle'] as String? ??
+              'Take a moment to reflect on what you\'re grateful for today';
+      final quickAddTitle =
+          translations['quick_add_action_title'] as String? ?? 'Quick Add';
+      final gratefulForLabel =
+          translations['what_are_you_grateful_for'] as String? ??
+              'What are you grateful for?';
+
       await _notifications.cancel(0);
       await _notifications.zonedSchedule(
         0,
-        'Time for Gratitude',
-        'Take a moment to reflect on what you\'re grateful for today',
+        title,
+        body,
         todaysReminderTime.add(const Duration(days: 1)),
-        _dailyReminderNotificationDetails(),
+        _dailyReminderNotificationDetails(
+          quickAddTitle: quickAddTitle,
+          gratefulForLabel: gratefulForLabel,
+        ),
         androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
         uiLocalNotificationDateInterpretation:
             UILocalNotificationDateInterpretation.absoluteTime,
@@ -516,6 +558,11 @@ class NotificationService {
 
       final gratitudeText = randomGratitude.items.join('\n• ');
 
+      final translations = await _loadTranslations();
+      final title =
+          translations['gratitude_reminder_notification_title'] as String? ??
+              'Remember this?';
+
       // TEST MODE: Every minute (regularityHours = 0)
       if (regularityHours == 0) {
         final now = tz.TZDateTime.now(tz.local);
@@ -531,7 +578,7 @@ class NotificationService {
 
           await _notifications.zonedSchedule(
             notificationId,
-            'Remember this? 💭 [TEST]',
+            title,
             '• $gratitudeText',
             scheduledTime,
             const NotificationDetails(
@@ -583,7 +630,7 @@ class NotificationService {
       if (matchComponent != null) {
         await _notifications.zonedSchedule(
           1, // ID 1 for recurring
-          'Remember this? 💭',
+          title,
           '• $gratitudeText',
           _nextAnchoredInstance(
             anchorDate: anchorDate,
@@ -641,7 +688,7 @@ class NotificationService {
 
           await _notifications.zonedSchedule(
             notificationId,
-            'Remember this? 💭',
+            title,
             '• $gratitudeText',
             nextTime,
             const NotificationDetails(
@@ -739,39 +786,27 @@ class NotificationService {
     final now = tz.TZDateTime.now(tz.local);
     final testTime = now.add(delay);
 
+    final translations = await _loadTranslations();
+    final title =
+        translations['onboarding_notification_title'] as String? ??
+            'Time for Gratitude';
+    final body =
+        translations['onboarding_notification_subtitle'] as String? ??
+            'Take a moment to reflect on what you\'re grateful for today';
+    final quickAddTitle =
+        translations['quick_add_action_title'] as String? ?? 'Quick Add';
+    final gratefulForLabel =
+        translations['what_are_you_grateful_for'] as String? ??
+            'What are you grateful for?';
+
     await _notifications.zonedSchedule(
       999, // Test notification ID
-      'Time for Gratitude [TEST]',
-      'Take a moment to reflect on what you\'re grateful for today',
+      title,
+      body,
       testTime,
-      const NotificationDetails(
-        android: AndroidNotificationDetails(
-          'daily_reminder',
-          'Daily Reminder',
-          channelDescription: 'Daily reminder to add gratitude',
-          importance: Importance.high,
-          priority: Priority.high,
-          // Android inline reply action
-          actions: <AndroidNotificationAction>[
-            AndroidNotificationAction(
-              'quick_add',
-              'Quick Add',
-              showsUserInterface: false,
-              inputs: <AndroidNotificationActionInput>[
-                AndroidNotificationActionInput(
-                  label: 'What are you grateful for?',
-                ),
-              ],
-            ),
-          ],
-        ),
-        iOS: DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-          // iOS text input category
-          categoryIdentifier: 'gratitude_input',
-        ),
+      _dailyReminderNotificationDetails(
+        quickAddTitle: quickAddTitle,
+        gratefulForLabel: gratefulForLabel,
       ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
@@ -797,9 +832,14 @@ class NotificationService {
       final now = tz.TZDateTime.now(tz.local);
       final testTime = now.add(const Duration(seconds: 5));
 
+      final translations = await _loadTranslations();
+      final title =
+          translations['gratitude_reminder_notification_title'] as String? ??
+              'Remember this?';
+
       await _notifications.zonedSchedule(
         998, // Test notification ID
-        'Remember this? 💭 [TEST]',
+        title,
         '• $gratitudeText',
         testTime,
         const NotificationDetails(
