@@ -50,3 +50,4 @@ ios/Runner/GoogleService-Info.plist
 
 # Claude Code agent files
 .agent/
+.claude/worktrees/
