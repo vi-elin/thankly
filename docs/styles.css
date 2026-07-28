@@ -1,0 +1,124 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --bg: #FCFAFB;
+    --ink: #17161A;
+    --ink-soft: #6E6A70;
+    --ink-faint: #B2ADB4;
+    --text: #352D31;
+    --accent: #C97B93;
+    --accent-dark: #B15D78;
+    --hairline: #ECE7E9;
+    --card-tint: #FBF2F5;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    line-height: 1.6;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--accent-dark);
+}
+
+.site-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 28px 24px;
+}
+
+.site-header .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: -0.01em;
+}
+
+.site-header .brand:hover {
+    color: var(--ink);
+    opacity: 0.7;
+}
+
+.site-header .brand img {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+}
+
+.cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 16px;
+    font-weight: 600;
+    padding: 17px 32px;
+    border-radius: 100px;
+    box-shadow: 0 16px 32px -12px rgba(0, 0, 0, 0.28);
+    border: none;
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.cta-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 38px -12px rgba(0, 0, 0, 0.34);
+    color: var(--bg);
+}
+
+footer {
+    border-top: 1px solid var(--hairline);
+    padding: 48px 24px;
+    margin-top: auto;
+}
+
+.footer-inner {
+    max-width: 1120px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    text-align: center;
+}
+
+.footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px;
+    justify-content: center;
+    font-size: 15px;
+    color: var(--ink-soft);
+}
+
+.footer-links a {
+    color: var(--ink-soft);
+}
+
+.footer-links a:hover {
+    color: var(--ink);
+}
+
+.copyright {
+    font-size: 13px;
+    color: var(--ink-faint);
+}

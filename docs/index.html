@@ -4,124 +4,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thanklio - Legal Documents</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+    <title>Thanklio — A Simple Gratitude Journal</title>
+    <meta name="description" content="Thanklio is a simple gratitude journal for your everyday moments. Capture what you're thankful for in seconds and build a lasting habit.">
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: linear-gradient(180deg, #f6dce6 0%, #fbeef1 100%);
-            min-height: 100vh;
+    <link rel="icon" type="image/png" href="images/favicon-32.png">
+    <link rel="apple-touch-icon" href="images/apple-touch-icon.png">
+
+    <meta property="og:title" content="Thanklio — A Simple Gratitude Journal">
+    <meta property="og:description" content="A simple gratitude journal for your everyday moments.">
+    <meta property="og:image" content="https://thanklio.app/images/app-icon-512.png">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://thanklio.app/">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* HERO */
+        .hero {
+            flex: 1;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 20px;
-        }
-
-        .container {
-            max-width: 600px;
-            background: white;
-            padding: 60px 40px;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 64px 24px;
             text-align: center;
         }
 
-        h1 {
-            color: #c9668c;
-            margin-bottom: 20px;
-            font-size: 3em;
+        .app-icon {
+            width: 88px;
+            height: 88px;
+            border-radius: 22px;
+            box-shadow: 0 20px 40px -16px rgba(217, 120, 150, 0.45);
+            margin-bottom: 32px;
+            object-fit: cover;
         }
 
-        .subtitle {
-            color: #666;
-            font-size: 1.2em;
-            margin-bottom: 40px;
+        .hero h1 {
+            font-size: clamp(44px, 8vw, 80px);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.02;
+            margin: 0 0 20px;
         }
 
-        .links {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-            margin-top: 40px;
+        .hero p.tagline {
+            font-size: clamp(18px, 2.4vw, 23px);
+            font-weight: 400;
+            color: var(--ink-soft);
+            max-width: 520px;
+            margin: 0 0 40px;
         }
 
-        .link-card {
-            background: linear-gradient(180deg, #E580A4 0%, #D2698E 100%);
-            color: white;
-            padding: 25px;
-            border-radius: 12px;
-            text-decoration: none;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            box-shadow: 0 4px 15px rgba(210, 105, 142, 0.3);
-        }
-
-        .link-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(210, 105, 142, 0.5);
-        }
-
-        .link-card h2 {
-            font-size: 1.5em;
-            margin-bottom: 10px;
-        }
-
-        .link-card p {
-            opacity: 0.9;
-            font-size: 0.95em;
-        }
-
-        .footer {
-            margin-top: 40px;
-            color: #666;
-            font-size: 0.9em;
-        }
-
-        @media (max-width: 600px) {
-            .container {
-                padding: 40px 20px;
-            }
-
-            h1 {
-                font-size: 2em;
-            }
-        }
     </style>
 </head>
 
 <body>
-    <div class="container">
+
+    <section class="hero">
+        <img class="app-icon" src="images/app-icon.png" alt="Thanklio app icon">
+
         <h1>Thanklio</h1>
-        <p class="subtitle">Legal Documents</p>
+        <p class="tagline">A simple gratitude journal for your everyday moments</p>
 
-        <div class="links">
-            <a href="privacy-policy.html" class="link-card">
-                <h2>Privacy Policy</h2>
-                <p>Learn how we protect your data and privacy</p>
-            </a>
+        <a href="https://apps.apple.com/app/id6791693586" class="cta-btn" target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M9 2v10M9 12l-4-4M9 12l4-4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M3 15h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+            </svg>
+            Download on the App Store
+        </a>
+    </section>
 
-            <a href="terms-of-service.html" class="link-card">
-                <h2>Terms of Service</h2>
-                <p>Understand the terms of using our app</p>
-            </a>
-
-            <a href="support.html" class="link-card">
-                <h2>Support</h2>
-                <p>Get help or ask us a question</p>
-            </a>
+    <footer>
+        <div class="footer-inner">
+            <div class="footer-links">
+                <a href="privacy-policy.html">Privacy Policy</a>
+                <a href="terms-of-service.html">Terms of Service</a>
+                <a href="support.html">Support</a>
+                <a href="mailto:vielindevelopment@gmail.com">vielindevelopment@gmail.com</a>
+            </div>
+            <div class="copyright">© 2026 Thanklio</div>
         </div>
+    </footer>
 
-        <div class="footer">
-            <p style="margin-top: 10px;">Questions? Contact us at <a href="mailto:vielindevelopment@gmail.com"
-                    style="color: #c9668c;">vielindevelopment@gmail.com</a></p>
-        </div>
-    </div>
 </body>
 
 </html>
